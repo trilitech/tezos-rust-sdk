@@ -7,6 +7,7 @@ use self::macros::{make_all_data, make_data};
 pub use crate::common::{bytes::Bytes, string::String};
 use crate::internal::normalizer::MichelsonNormalizer;
 pub use map::{map, Map};
+use num_traits::ToPrimitive;
 pub use sequence::{sequence, Sequence};
 use tezos_core::internal::normalizer::Normalizer;
 pub use tezos_core::types::number::{Int, Nat};
@@ -83,7 +84,7 @@ impl TryFrom<Data> for i8 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Int(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_i8().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -102,7 +103,7 @@ impl TryFrom<Data> for i32 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Int(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_i32().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -121,7 +122,7 @@ impl TryFrom<Data> for i64 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Int(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_i64().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -140,7 +141,7 @@ impl TryFrom<Data> for i128 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Int(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_i128().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -165,7 +166,7 @@ impl TryFrom<Data> for u8 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Nat(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_u8().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -184,7 +185,7 @@ impl TryFrom<Data> for u16 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Nat(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_u16().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -203,7 +204,7 @@ impl TryFrom<Data> for u32 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Nat(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_u32().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -222,7 +223,7 @@ impl TryFrom<Data> for u64 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Nat(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_u64().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)
@@ -241,7 +242,7 @@ impl TryFrom<Data> for u128 {
 
     fn try_from(value: Data) -> Result<Self> {
         if let Data::Nat(value) = value {
-            return Ok(value.to_integer()?);
+            return value.to_u128().ok_or(Error::BigIntConversionError);
         }
 
         Err(Error::InvalidMichelsonData)

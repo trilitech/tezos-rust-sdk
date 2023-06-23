@@ -1,6 +1,10 @@
+use derive_more::{
+    Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div, DivAssign,
+    Mul, MulAssign, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
+};
 use lazy_static::lazy_static;
-use num_bigint::{BigUint, ToBigUint};
-use num_traits::{Num, Unsigned};
+use num_bigint::{BigInt, BigUint};
+use num_traits::{Num, ToPrimitive};
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -23,39 +27,59 @@ lazy_static! {
 }
 
 /// An unsigned integer that can be encoded to a Zarith number
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(
+    Add,
+    AddAssign,
+    PartialEq,
+    PartialOrd,
+    Debug,
+    Eq,
+    Clone,
+    BitAnd,
+    BitAndAssign,
+    BitOr,
+    BitOrAssign,
+    BitXor,
+    BitXorAssign,
+    Div,
+    DivAssign,
+    Mul,
+    MulAssign,
+    Octal,
+    Rem,
+    RemAssign,
+    Shl,
+    ShlAssign,
+    Shr,
+    ShrAssign,
+    Sub,
+    SubAssign,
+)]
+#[div(forward)]
+#[div_assign(forward)]
+#[mul(forward)]
+#[mul_assign(forward)]
+#[rem(forward)]
+#[rem_assign(forward)]
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
-    serde(try_from = "String")
+    serde(try_from = "String"),
+    serde(into = "String")
 )]
-pub struct Nat(String);
+pub struct Nat(BigUint);
 
 impl Nat {
     pub fn from<S: Into<String>>(value: S) -> Result<Self> {
         let value: String = value.into();
         if Self::is_valid(&value) {
-            return Ok(Self(value));
+            return Ok(Self(BigUint::from_str_radix(&value, 10)?));
         }
         Err(Error::InvalidIntegerString)
     }
 
     pub fn from_string(value: String) -> Result<Self> {
         Self::from(value)
-    }
-
-    pub fn from_integer<I: Unsigned + ToString>(value: I) -> Self {
-        Self::from_string(value.to_string()).unwrap()
-    }
-
-    pub fn to_integer<I: Unsigned + FromStr>(&self) -> Result<I>
-    where
-        <I as FromStr>::Err: Debug,
-    {
-        Ok(self
-            .0
-            .parse::<I>()
-            .map_err(|_error| Error::InvalidNaturalConversion)?)
     }
 
     pub fn is_valid(value: &str) -> bool {
@@ -74,7 +98,11 @@ impl Nat {
         NaturalBytesCoder::decode_consuming(bytes)
     }
 
-    pub fn to_str(&self) -> &str {
+    pub fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+
+    pub fn value(&self) -> &BigUint {
         &self.0
     }
 }
@@ -85,59 +113,77 @@ impl Display for Nat {
     }
 }
 
-impl ToBigUint for Nat {
-    fn to_biguint(&self) -> Option<BigUint> {
-        BigUint::from_str_radix(&self.0, 10)
-            .map(Some)
-            .unwrap_or(None)
+impl ToPrimitive for Nat {
+    fn to_i64(&self) -> Option<i64> {
+        None
+    }
+
+    fn to_u64(&self) -> Option<u64> {
+        TryInto::<u64>::try_into(self.0.clone()).ok()
+    }
+
+    fn to_i128(&self) -> Option<i128> {
+        None
+    }
+
+    fn to_u128(&self) -> Option<u128> {
+        TryInto::<u128>::try_into(self.0.clone()).ok()
+    }
+}
+
+impl FromStr for Nat {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_string(s.into())
     }
 }
 
 impl From<u8> for Nat {
     fn from(value: u8) -> Self {
-        Self::from_integer(value)
+        Self(BigUint::from(value))
     }
 }
 
 impl From<u16> for Nat {
     fn from(value: u16) -> Self {
-        Self::from_integer(value)
+        Self(BigUint::from(value))
     }
 }
 
 impl From<u32> for Nat {
     fn from(value: u32) -> Self {
-        Self::from_integer(value)
+        Self(BigUint::from(value))
     }
 }
 
 impl From<u64> for Nat {
     fn from(value: u64) -> Self {
-        Self::from_integer(value)
+        Self(BigUint::from(value))
     }
 }
 
 impl From<u128> for Nat {
     fn from(value: u128) -> Self {
-        Self::from_integer(value)
+        Self(BigUint::from(value))
     }
 }
 
 impl From<BigUint> for Nat {
     fn from(value: BigUint) -> Self {
-        Self::from_integer(value)
+        Self(value)
     }
 }
 
 impl From<&Mutez> for Nat {
     fn from(mutez: &Mutez) -> Self {
-        Self::from_integer(mutez.value())
+        Self(BigUint::from(mutez.value()))
     }
 }
 
 impl From<Nat> for String {
     fn from(value: Nat) -> Self {
-        value.0
+        value.to_string()
     }
 }
 
@@ -173,9 +219,27 @@ impl TryFrom<&Nat> for Vec<u8> {
     }
 }
 
+impl From<Nat> for BigInt {
+    fn from(value: Nat) -> Self {
+        value.0.into()
+    }
+}
+
+impl From<&Nat> for BigInt {
+    fn from(value: &Nat) -> Self {
+        value.0.clone().into()
+    }
+}
+
+impl From<&Nat> for BigUint {
+    fn from(value: &Nat) -> Self {
+        value.0.clone()
+    }
+}
+
 impl From<Nat> for BigUint {
     fn from(value: Nat) -> Self {
-        value.to_biguint().unwrap()
+        value.0
     }
 }
 

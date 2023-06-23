@@ -80,7 +80,7 @@ impl MappedStorage {
             if let Some(big_map_type) = big_map_type {
                 let int: Option<&Int> = current_value.inner_value_ref();
                 if let Some(id) = int {
-                    big_map_handler(big_map_type.clone(), id.to_integer()?);
+                    big_map_handler(big_map_type.clone(), id.try_into()?);
                 }
             }
 

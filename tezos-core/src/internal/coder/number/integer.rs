@@ -1,4 +1,4 @@
-use num_bigint::{BigInt, BigUint, ToBigUint};
+use num_bigint::{BigInt, BigUint, ToBigInt};
 use num_traits::{Signed, ToPrimitive, Zero};
 
 use crate::{
@@ -16,7 +16,7 @@ pub struct IntegerBytesCoder;
 
 impl Encoder<Int, Vec<u8>, Error> for IntegerBytesCoder {
     fn encode(value: &Int) -> Result<Vec<u8>> {
-        let value: BigInt = value.to_integer()?;
+        let value: BigInt = value.into();
         let abs = value.abs().to_biguint().unwrap();
 
         let byte = &abs & BigUint::from(0b0011_1111u8);
@@ -52,6 +52,14 @@ impl Decoder<Int, Vec<u8>, Error> for IntegerBytesCoder {
     }
 }
 
+impl Decoder<Int, [u8], Error> for IntegerBytesCoder {
+    fn decode(value: &[u8]) -> Result<Int> {
+        let value = &mut ConsumableBytes::new(value);
+
+        Self::decode_consuming(value)
+    }
+}
+
 impl ConsumingDecoder<Int, u8, Error> for IntegerBytesCoder {
     fn decode_consuming<CL: ConsumableList<u8>>(value: &mut CL) -> Result<Int> {
         let byte = value.consume_first()?;
@@ -63,10 +71,11 @@ impl ConsumingDecoder<Int, u8, Error> for IntegerBytesCoder {
         };
         let has_next = (byte & 0b1000_0000u8) == 0b1000_0000u8;
         let abs = if has_next {
-            let decoded: BigInt = NaturalBytesCoder::decode_consuming(value)?
-                .to_biguint()
-                .unwrap()
-                .into();
+            let decoded = NaturalBytesCoder::decode_consuming(value)?
+                .value()
+                .to_bigint()
+                .unwrap();
+
             part + (decoded << 6u8)
         } else {
             part

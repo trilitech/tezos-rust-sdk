@@ -57,7 +57,7 @@ impl NaturalBytesCoder {
 
 impl Encoder<Nat, Vec<u8>, Error> for NaturalBytesCoder {
     fn encode(value: &Nat) -> Result<Vec<u8>> {
-        let value: BigUint = value.to_integer().unwrap();
+        let value: BigUint = value.into();
         if value == BigUint::zero() {
             return Ok(vec![0]);
         }

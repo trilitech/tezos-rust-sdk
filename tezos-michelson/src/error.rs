@@ -33,6 +33,7 @@ pub enum Error {
     InvalidPrimitiveApplication,
     InvalidMichelineLiteral,
     MichelineValueSchemaMismatch,
+    BigIntConversionError,
 }
 
 pub type Result<T> = result::Result<T, Error>;

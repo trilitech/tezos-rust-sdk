@@ -277,7 +277,7 @@ mod test {
             .await?
             .try_into()?;
 
-        assert_eq!("164748675300576703", balance.to_str());
+        assert_eq!("164748675300576703", balance.to_string());
         Ok(())
     }
 
