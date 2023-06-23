@@ -284,7 +284,7 @@ fn fee(operation_size: usize, limits: &OperationLimits) -> Result<Mutez> {
     let base: Mutez = BASE_FEE.into();
     let safty_margin: Mutez = FEE_SAFTY_MARGIN.into();
 
-    Ok(base + gas_fee + storage_fee + safty_margin)
+    Ok((((base + gas_fee)? + storage_fee)? + safty_margin)?)
 }
 
 fn nanotez_to_mutez(value: BigUint) -> Result<Mutez> {

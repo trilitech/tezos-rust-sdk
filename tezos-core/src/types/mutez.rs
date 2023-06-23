@@ -1,16 +1,12 @@
 //! Tezos Mutez type.
 
+use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Sub};
 use std::{fmt::Debug, str::FromStr};
 
-use derive_more;
-use derive_more::{
-    Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Display, Div,
-    DivAssign, Mul, MulAssign, Not, Octal, Product, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign,
-    Sub, SubAssign, Sum,
-};
+use derive_more::{Display, Octal};
 use lazy_static::lazy_static;
 use num_bigint::BigUint;
-use num_traits::ToPrimitive;
+use num_traits::{FromPrimitive, ToPrimitive};
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -37,59 +33,27 @@ lazy_static! {
 /// ```
 ///
 /// Internally the number is represented with an [i64], but negative values are invalid.
-#[derive(
-    Add,
-    AddAssign,
-    PartialEq,
-    PartialOrd,
-    Debug,
-    Eq,
-    Clone,
-    Copy,
-    Display,
-    BitAnd,
-    BitAndAssign,
-    BitOr,
-    BitOrAssign,
-    BitXor,
-    BitXorAssign,
-    Div,
-    DivAssign,
-    Mul,
-    MulAssign,
-    Not,
-    Octal,
-    Product,
-    Rem,
-    RemAssign,
-    Shl,
-    ShlAssign,
-    Shr,
-    ShrAssign,
-    Sub,
-    SubAssign,
-    Sum,
-)]
-#[div(forward)]
-#[div_assign(forward)]
-#[mul(forward)]
-#[mul_assign(forward)]
-#[rem(forward)]
-#[rem_assign(forward)]
+#[derive(PartialEq, PartialOrd, Debug, Eq, Clone, Copy, Display, Octal)]
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
-    serde(try_from = "String")
+    serde(try_from = "String"),
+    serde(into = "String")
 )]
-pub struct Mutez(#[cfg_attr(feature = "serde", serde(serialize_with = "i64_to_string"))] i64);
+pub struct Mutez(i64);
 
 impl Mutez {
-    pub fn is_valid(value: &str) -> bool {
-        REGEX.is_match(value)
+    /// Creates the [Mutez] value from an [i64] integer [value].
+    /// Fails if [value < 0].
+    pub fn new(value: i64) -> Result<Self> {
+        if value < 0 {
+            return Err(Error::InvalidMutez);
+        }
+        Ok(Self(value))
     }
 
-    pub(super) fn value(&self) -> u64 {
-        self.0.to_u64().unwrap()
+    pub fn is_valid(value: &str) -> bool {
+        REGEX.is_match(value)
     }
     /// Encodes the [Mutez] value to bytes.
     pub fn to_bytes(&self) -> Result<Vec<u8>> {
@@ -105,62 +69,9 @@ impl Mutez {
     }
 }
 
-#[cfg(feature = "serde")]
-fn i64_to_string<S>(value: &i64, s: S) -> core::result::Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
-{
-    s.serialize_str(&value.to_string())
-}
-
-impl FromStr for Mutez {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        if Self::is_valid(s) {
-            return Ok(Self(s.parse::<i64>()?));
-        }
-        Err(Error::InvalidUnsignedIntegerString)
-    }
-}
-
-impl From<u8> for Mutez {
-    fn from(value: u8) -> Self {
-        Self(value.into())
-    }
-}
-
-impl From<u16> for Mutez {
-    fn from(value: u16) -> Self {
-        Self(value.into())
-    }
-}
-
-impl From<u32> for Mutez {
-    fn from(value: u32) -> Self {
-        Self(value.into())
-    }
-}
-
-impl TryFrom<u64> for Mutez {
-    type Error = Error;
-
-    fn try_from(value: u64) -> Result<Self> {
-        Ok(Self(value.try_into()?))
-    }
-}
-
-impl TryFrom<BigUint> for Mutez {
-    type Error = Error;
-
-    fn try_from(value: BigUint) -> Result<Self> {
-        Ok(Self(value.try_into()?))
-    }
-}
-
-impl From<Mutez> for String {
-    fn from(mutez: Mutez) -> Self {
-        mutez.0.to_string()
+impl Default for Mutez {
+    fn default() -> Self {
+        Self(0)
     }
 }
 
@@ -182,99 +93,127 @@ impl ToPrimitive for Mutez {
     }
 }
 
-impl TryFrom<Mutez> for u8 {
-    type Error = Error;
+impl FromPrimitive for Mutez {
+    fn from_i64(n: i64) -> Option<Mutez> {
+        if n >= 0 {
+            // Safe to use [Self] constructor since [n >= 0]
+            Some(Self(n))
+        } else {
+            None
+        }
+    }
 
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_u8().ok_or(Error::InvalidConversion)
+    fn from_u64(n: u64) -> Option<Mutez> {
+        Self::from_i64(n.to_i64()?)
     }
 }
 
-impl TryFrom<Mutez> for i8 {
-    type Error = Error;
+impl FromStr for Mutez {
+    type Err = Error;
 
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_i8().ok_or(Error::InvalidConversion)
+    fn from_str(s: &str) -> Result<Self> {
+        Self::new(s.parse()?)
     }
 }
 
-impl TryFrom<Mutez> for u16 {
+macro_rules! impl_try_from_mutez {
+    ($T:ty, $to_ty:path) => {
+        impl TryFrom<&Mutez> for $T {
+            type Error = Error;
+
+            fn try_from(value: &Mutez) -> Result<$T> {
+                $to_ty(value).ok_or(Error::InvalidConversion)
+            }
+        }
+
+        impl TryFrom<Mutez> for $T {
+            type Error = Error;
+
+            fn try_from(value: Mutez) -> Result<$T> {
+                <$T>::try_from(&value)
+            }
+        }
+    };
+}
+
+impl_try_from_mutez!(u8, ToPrimitive::to_u8);
+impl_try_from_mutez!(i8, ToPrimitive::to_i8);
+impl_try_from_mutez!(u16, ToPrimitive::to_u16);
+impl_try_from_mutez!(i16, ToPrimitive::to_i16);
+impl_try_from_mutez!(u32, ToPrimitive::to_u32);
+impl_try_from_mutez!(i32, ToPrimitive::to_i32);
+impl_try_from_mutez!(u64, ToPrimitive::to_u64);
+impl_try_from_mutez!(i64, ToPrimitive::to_i64);
+impl_try_from_mutez!(u128, ToPrimitive::to_u128);
+impl_try_from_mutez!(i128, ToPrimitive::to_i128);
+impl_try_from_mutez!(usize, ToPrimitive::to_usize);
+impl_try_from_mutez!(isize, ToPrimitive::to_isize);
+
+macro_rules! impl_mutez_from_uint {
+    ($T:ty) => {
+        impl From<$T> for Mutez {
+            fn from(value: $T) -> Self {
+                Self(value as i64)
+            }
+        }
+    };
+}
+
+impl_mutez_from_uint!(u8);
+impl_mutez_from_uint!(u16);
+impl_mutez_from_uint!(u32);
+
+macro_rules! impl_mutez_try_from_int {
+    ($T:ty, $from_ty:path) => {
+        impl TryFrom<$T> for Mutez {
+            type Error = Error;
+
+            fn try_from(value: $T) -> Result<Mutez> {
+                $from_ty(value).ok_or(Error::InvalidConversion)
+            }
+        }
+    };
+}
+
+impl_mutez_try_from_int!(i8, FromPrimitive::from_i8);
+impl_mutez_try_from_int!(i16, FromPrimitive::from_i16);
+impl_mutez_try_from_int!(i32, FromPrimitive::from_i32);
+impl_mutez_try_from_int!(u64, FromPrimitive::from_u64);
+impl_mutez_try_from_int!(i64, FromPrimitive::from_i64);
+impl_mutez_try_from_int!(u128, FromPrimitive::from_u128);
+impl_mutez_try_from_int!(i128, FromPrimitive::from_i128);
+impl_mutez_try_from_int!(usize, FromPrimitive::from_usize);
+impl_mutez_try_from_int!(isize, FromPrimitive::from_isize);
+
+impl TryFrom<BigUint> for Mutez {
     type Error = Error;
 
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_u16().ok_or(Error::InvalidConversion)
+    fn try_from(value: BigUint) -> Result<Self> {
+        // Safe to use [Self] since [value.try_into()] will fail if
+        // we overflow
+        Ok(Self(value.try_into()?))
     }
 }
 
-impl TryFrom<Mutez> for i16 {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_i16().ok_or(Error::InvalidConversion)
+impl From<&Mutez> for BigUint {
+    fn from(value: &Mutez) -> Self {
+        // Coercion to [u64] is safe here since it is known
+        // that [value.0 >= 0]
+        BigUint::from(value.0 as u64)
     }
 }
 
-impl TryFrom<Mutez> for u32 {
+impl TryFrom<&Nat> for Mutez {
     type Error = Error;
 
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_u32().ok_or(Error::InvalidConversion)
+    fn try_from(value: &Nat) -> Result<Self> {
+        value.value().clone().try_into()
     }
 }
 
-impl TryFrom<Mutez> for i32 {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_i32().ok_or(Error::InvalidConversion)
-    }
-}
-
-impl TryFrom<Mutez> for u64 {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_u64().ok_or(Error::InvalidConversion)
-    }
-}
-
-impl TryFrom<Mutez> for i64 {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_i64().ok_or(Error::InvalidConversion)
-    }
-}
-
-impl TryFrom<Mutez> for u128 {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_u128().ok_or(Error::InvalidConversion)
-    }
-}
-
-impl TryFrom<Mutez> for i128 {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_i128().ok_or(Error::InvalidConversion)
-    }
-}
-
-impl TryFrom<Mutez> for usize {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_usize().ok_or(Error::InvalidConversion)
-    }
-}
-
-impl TryFrom<Mutez> for isize {
-    type Error = Error;
-
-    fn try_from(value: Mutez) -> Result<Self> {
-        value.to_isize().ok_or(Error::InvalidConversion)
+impl From<Mutez> for String {
+    fn from(mutez: Mutez) -> Self {
+        mutez.0.to_string()
     }
 }
 
@@ -294,14 +233,6 @@ impl TryFrom<&str> for Mutez {
     }
 }
 
-impl TryFrom<&Nat> for Mutez {
-    type Error = Error;
-
-    fn try_from(value: &Nat) -> Result<Self> {
-        value.to_string().try_into()
-    }
-}
-
 impl TryFrom<&Vec<u8>> for Mutez {
     type Error = Error;
 
@@ -318,11 +249,26 @@ impl TryFrom<&Mutez> for Vec<u8> {
     }
 }
 
-impl Default for Mutez {
-    fn default() -> Self {
-        Self(0)
-    }
+macro_rules! impl_op {
+    ($O:path, $op:ident) => {
+        impl $O for Mutez {
+            type Output = Result<Mutez>;
+
+            fn $op(self, rhs: Mutez) -> Self::Output {
+                Self::new(self.0.$op(rhs.0))
+            }
+        }
+    };
 }
+
+impl_op!(Add, add);
+impl_op!(Sub, sub);
+impl_op!(Div, div);
+impl_op!(Mul, mul);
+impl_op!(BitOr, bitor);
+impl_op!(BitAnd, bitand);
+impl_op!(BitXor, bitxor);
+
 
 #[cfg(test)]
 mod test {
@@ -333,7 +279,7 @@ mod test {
         let v1: Mutez = 1u8.into();
         let v2: Mutez = "2".try_into()?;
 
-        assert_eq!(v1 + v2, 3u32.into());
+        assert_eq!((v1 + v2).unwrap(), 3u32.into());
 
         Ok(())
     }
@@ -343,7 +289,7 @@ mod test {
         let v1: Mutez = 1u8.into();
         let v2: Mutez = 2u8.into();
 
-        assert_eq!(v1 + v2, 3u32.into());
+        assert_eq!((v1 + v2).unwrap(), 3u32.into());
 
         Ok(())
     }

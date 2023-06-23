@@ -15,6 +15,7 @@ pub enum Error {
     Base58Decoding {
         source: bs58::decode::Error,
     },
+    InvalidMutez,
     InvalidIntegerString,
     InvalidUnsignedIntegerString,
     InvalidTezString,

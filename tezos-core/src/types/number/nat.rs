@@ -191,7 +191,7 @@ impl_nat_from_uint!(usize);
 
 impl From<&Mutez> for Nat {
     fn from(mutez: &Mutez) -> Self {
-        Self(BigUint::from(mutez.value()))
+        Self(mutez.into())
     }
 }
 
