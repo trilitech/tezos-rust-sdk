@@ -3,11 +3,11 @@ use derive_more::{
     Mul, MulAssign, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
 };
 use lazy_static::lazy_static;
-use num_bigint::BigInt;
+use num_bigint::{BigInt, BigUint};
 use num_traits::{Num, ToPrimitive};
 use regex::Regex;
 #[cfg(feature = "serde")]
-use serde::{de, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Debug, Display},
     str::FromStr,
@@ -101,11 +101,9 @@ impl Int {
     }
 }
 
-impl FromStr for Int {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Self::from_string(s.into())
+impl From<BigInt> for Int {
+    fn from(value: BigInt) -> Self {
+        Self(value)
     }
 }
 
@@ -133,41 +131,69 @@ impl ToPrimitive for Int {
     }
 }
 
-impl From<i8> for Int {
-    fn from(value: i8) -> Self {
-        Self(BigInt::from(value))
+impl FromStr for Int {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_string(s.into())
     }
 }
 
-impl From<i16> for Int {
-    fn from(value: i16) -> Self {
-        Self(BigInt::from(value))
-    }
+macro_rules! impl_try_from_int {
+    ($T:ty) => {
+        impl TryFrom<&Int> for $T {
+            type Error = Error;
+
+            fn try_from(value: &Int) -> Result<$T> {
+                Ok(value.0.clone().try_into()?)
+            }
+        }
+
+        impl TryFrom<Int> for $T {
+            type Error = Error;
+
+            fn try_from(value: Int) -> Result<$T> {
+                <$T>::try_from(&value)
+            }
+        }
+    };
 }
 
-impl From<i32> for Int {
-    fn from(value: i32) -> Self {
-        Self(BigInt::from(value))
-    }
+impl_try_from_int!(i8);
+impl_try_from_int!(u8);
+impl_try_from_int!(i16);
+impl_try_from_int!(u16);
+impl_try_from_int!(i32);
+impl_try_from_int!(u32);
+impl_try_from_int!(i64);
+impl_try_from_int!(u64);
+impl_try_from_int!(i128);
+impl_try_from_int!(u128);
+impl_try_from_int!(isize);
+impl_try_from_int!(usize);
+
+macro_rules! impl_int_from_int {
+    ($T:ty) => {
+        impl From<$T> for Int {
+            fn from(value: $T) -> Self {
+                Self(BigInt::from(value))
+            }
+        }
+    };
 }
 
-impl From<i64> for Int {
-    fn from(value: i64) -> Self {
-        Self(BigInt::from(value))
-    }
-}
-
-impl From<i128> for Int {
-    fn from(value: i128) -> Self {
-        Self(BigInt::from(value))
-    }
-}
-
-impl From<BigInt> for Int {
-    fn from(value: BigInt) -> Self {
-        Self(BigInt::from(value))
-    }
-}
+impl_int_from_int!(i8);
+impl_int_from_int!(u8);
+impl_int_from_int!(i16);
+impl_int_from_int!(u16);
+impl_int_from_int!(i32);
+impl_int_from_int!(u32);
+impl_int_from_int!(i64);
+impl_int_from_int!(u64);
+impl_int_from_int!(i128);
+impl_int_from_int!(u128);
+impl_int_from_int!(isize);
+impl_int_from_int!(usize);
 
 impl From<Nat> for Int {
     fn from(value: Nat) -> Self {
@@ -184,18 +210,6 @@ impl From<&Nat> for Int {
 impl From<Int> for String {
     fn from(value: Int) -> Self {
         value.to_string()
-    }
-}
-
-impl From<Int> for BigInt {
-    fn from(value: Int) -> Self {
-        value.0
-    }
-}
-
-impl From<&Int> for BigInt {
-    fn from(value: &Int) -> Self {
-        value.0.clone()
     }
 }
 
@@ -231,11 +245,38 @@ impl TryFrom<&Int> for Vec<u8> {
     }
 }
 
-impl TryFrom<&Int> for u32 {
+impl From<Int> for BigInt {
+    fn from(value: Int) -> Self {
+        value.0
+    }
+}
+
+impl From<&Int> for BigInt {
+    fn from(value: &Int) -> Self {
+        value.0.clone()
+    }
+}
+
+impl TryFrom<&Int> for BigUint {
     type Error = Error;
 
-    fn try_from(value: &Int) -> Result<u32> {
-        Ok(value.0.clone().try_into()?)
+    fn try_from(value: &Int) -> Result<Self> {
+        value
+            .0
+            .clone()
+            .try_into()
+            .map_err(|source| Error::TryFromBigInt { source })
+    }
+}
+
+impl TryFrom<Int> for BigUint {
+    type Error = Error;
+
+    fn try_from(value: Int) -> Result<Self> {
+        value
+            .0
+            .try_into()
+            .map_err(|source| Error::TryFromBigInt { source })
     }
 }
 

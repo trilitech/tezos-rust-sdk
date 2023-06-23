@@ -107,6 +107,12 @@ impl Nat {
     }
 }
 
+impl From<BigUint> for Nat {
+    fn from(value: BigUint) -> Self {
+        Self(value)
+    }
+}
+
 impl Display for Nat {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -139,45 +145,59 @@ impl FromStr for Nat {
     }
 }
 
-impl From<u8> for Nat {
-    fn from(value: u8) -> Self {
-        Self(BigUint::from(value))
-    }
+macro_rules! impl_try_from_nat {
+    ($T:ty) => {
+        impl TryFrom<&Nat> for $T {
+            type Error = Error;
+
+            fn try_from(value: &Nat) -> Result<$T> {
+                Ok(value.0.clone().try_into()?)
+            }
+        }
+
+        impl TryFrom<Nat> for $T {
+            type Error = Error;
+
+            fn try_from(value: Nat) -> Result<$T> {
+                <$T>::try_from(&value)
+            }
+        }
+    };
 }
 
-impl From<u16> for Nat {
-    fn from(value: u16) -> Self {
-        Self(BigUint::from(value))
-    }
+impl_try_from_nat!(u8);
+impl_try_from_nat!(u16);
+impl_try_from_nat!(u32);
+impl_try_from_nat!(u64);
+impl_try_from_nat!(u128);
+impl_try_from_nat!(usize);
+
+macro_rules! impl_nat_from_uint {
+    ($T:ty) => {
+        impl From<$T> for Nat {
+            fn from(value: $T) -> Self {
+                Self(BigUint::from(value))
+            }
+        }
+    };
 }
 
-impl From<u32> for Nat {
-    fn from(value: u32) -> Self {
-        Self(BigUint::from(value))
-    }
-}
-
-impl From<u64> for Nat {
-    fn from(value: u64) -> Self {
-        Self(BigUint::from(value))
-    }
-}
-
-impl From<u128> for Nat {
-    fn from(value: u128) -> Self {
-        Self(BigUint::from(value))
-    }
-}
-
-impl From<BigUint> for Nat {
-    fn from(value: BigUint) -> Self {
-        Self(value)
-    }
-}
+impl_nat_from_uint!(u8);
+impl_nat_from_uint!(u16);
+impl_nat_from_uint!(u32);
+impl_nat_from_uint!(u64);
+impl_nat_from_uint!(u128);
+impl_nat_from_uint!(usize);
 
 impl From<&Mutez> for Nat {
     fn from(mutez: &Mutez) -> Self {
         Self(BigUint::from(mutez.value()))
+    }
+}
+
+impl From<Mutez> for Nat {
+    fn from(mutez: Mutez) -> Self {
+        From::<&Mutez>::from(&mutez)
     }
 }
 
