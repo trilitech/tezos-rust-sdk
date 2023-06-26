@@ -3,13 +3,14 @@ use derive_more::{
     Mul, MulAssign, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
 };
 use lazy_static::lazy_static;
-use num_bigint::{BigInt, BigUint};
-use num_traits::{Num, ToPrimitive};
+use num_bigint::{BigInt, BigUint, Sign};
+use num_traits::{FromPrimitive, Num, ToPrimitive};
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Debug, Display},
+    ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Rem, Sub},
     str::FromStr,
 };
 
@@ -18,7 +19,7 @@ use crate::{
         coder::{ConsumingDecoder, Decoder, Encoder, NaturalBytesCoder},
         consumable_list::ConsumableList,
     },
-    types::mutez::Mutez,
+    types::{mutez::Mutez, number::Int},
     Error, Result,
 };
 
@@ -32,6 +33,7 @@ lazy_static! {
     AddAssign,
     PartialEq,
     PartialOrd,
+    Ord,
     Debug,
     Eq,
     Clone,
@@ -137,6 +139,21 @@ impl ToPrimitive for Nat {
     }
 }
 
+impl FromPrimitive for Nat {
+    fn from_i64(n: i64) -> Option<Nat> {
+        if n >= 0 {
+            // Safe to use [Self] constructor since [n >= 0]
+            Some(Self(BigUint::from(n as u64)))
+        } else {
+            None
+        }
+    }
+
+    fn from_u64(n: u64) -> Option<Nat> {
+        Some(Self(BigUint::from(n)))
+    }
+}
+
 impl FromStr for Nat {
     type Err = Error;
 
@@ -188,6 +205,38 @@ impl_nat_from_uint!(u32);
 impl_nat_from_uint!(u64);
 impl_nat_from_uint!(u128);
 impl_nat_from_uint!(usize);
+
+macro_rules! impl_nat_try_from_int {
+    ($T:ty, $from_ty:path) => {
+        impl TryFrom<$T> for Nat {
+            type Error = Error;
+
+            fn try_from(value: $T) -> Result<Nat> {
+                $from_ty(value).ok_or(Error::InvalidConversion)
+            }
+        }
+    };
+}
+
+impl_nat_try_from_int!(i8, FromPrimitive::from_i8);
+impl_nat_try_from_int!(i16, FromPrimitive::from_i16);
+impl_nat_try_from_int!(i32, FromPrimitive::from_i32);
+impl_nat_try_from_int!(i64, FromPrimitive::from_i64);
+impl_nat_try_from_int!(i128, FromPrimitive::from_i128);
+impl_nat_try_from_int!(isize, FromPrimitive::from_isize);
+
+impl TryFrom<Int> for Nat {
+    type Error = Error;
+
+    fn try_from(value: Int) -> Result<Nat> {
+        let (s, n) = value.into_parts();
+        match s {
+            Sign::Minus => Err(Error::InvalidConversion),
+            Sign::NoSign => Ok(n),
+            Sign::Plus => Ok(n),
+        }
+    }
+}
 
 impl From<&Mutez> for Nat {
     fn from(mutez: &Mutez) -> Self {
@@ -262,6 +311,28 @@ impl From<Nat> for BigUint {
         value.0
     }
 }
+
+// Fix pending on https://github.com/JelteF/derive_more/issues/156
+macro_rules! impl_op_as_ref {
+    ($O:ident, $op:ident) => {
+        impl<'a, 'b> $O<&'b Nat> for &'a Nat {
+            type Output = Nat;
+
+            fn $op(self, rhs: &'b Nat) -> Self::Output {
+                Nat($O::$op(&self.0, &rhs.0))
+            }
+        }
+    };
+}
+
+impl_op_as_ref!(Add, add);
+impl_op_as_ref!(Sub, sub);
+impl_op_as_ref!(Div, div);
+impl_op_as_ref!(Mul, mul);
+impl_op_as_ref!(Rem, rem);
+impl_op_as_ref!(BitOr, bitor);
+impl_op_as_ref!(BitAnd, bitand);
+impl_op_as_ref!(BitXor, bitxor);
 
 #[cfg(test)]
 mod test {

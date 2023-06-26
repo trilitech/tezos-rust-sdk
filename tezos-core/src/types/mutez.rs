@@ -1,11 +1,11 @@
 //! Tezos Mutez type.
 
-use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Sub};
+use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Sub, Rem};
 use std::{fmt::Debug, str::FromStr};
 
 use derive_more::{Display, Octal};
 use lazy_static::lazy_static;
-use num_bigint::BigUint;
+use num_bigint::{BigInt, BigUint};
 use num_traits::{FromPrimitive, ToPrimitive};
 use regex::Regex;
 #[cfg(feature = "serde")]
@@ -15,7 +15,7 @@ use crate::internal::coder::{ConsumingDecoder, Decoder, Encoder, MutezBytesCoder
 use crate::internal::consumable_list::ConsumableList;
 use crate::{Error, Result};
 
-use super::number::Nat;
+use super::number::{Int, Nat};
 
 lazy_static! {
     static ref REGEX: Regex = Regex::new(r"^[0-9]+$").unwrap();
@@ -33,7 +33,7 @@ lazy_static! {
 /// ```
 ///
 /// Internally the number is represented with an [i64], but negative values are invalid.
-#[derive(PartialEq, PartialOrd, Debug, Eq, Clone, Copy, Display, Octal)]
+#[derive(PartialEq, PartialOrd, Ord, Debug, Eq, Clone, Copy, Display, Octal)]
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
@@ -195,11 +195,52 @@ impl TryFrom<BigUint> for Mutez {
     }
 }
 
+impl TryFrom<Nat> for Mutez {
+    type Error = Error;
+    fn try_from(value: Nat) -> Result<Self> {
+        TryFrom::<BigUint>::try_from(value.value().clone())
+    }
+}
+
+impl TryFrom<BigInt> for Mutez {
+    type Error = Error;
+
+    fn try_from(value: BigInt) -> Result<Self> {
+        Ok(Self(value.try_into()?))
+    }
+}
+
+
+impl TryFrom<Int> for Mutez {
+    type Error = Error;
+    fn try_from(value: Int) -> Result<Self> {
+        TryFrom::<BigInt>::try_from(value.value().clone())
+    }
+}
+
 impl From<&Mutez> for BigUint {
     fn from(value: &Mutez) -> Self {
         // Coercion to [u64] is safe here since it is known
         // that [value.0 >= 0]
         BigUint::from(value.0 as u64)
+    }
+}
+
+impl From<Mutez> for BigUint {
+    fn from(value: Mutez) -> Self {
+        From::<&Mutez>::from(&value)
+    }
+}
+
+impl From<&Mutez> for Int {
+    fn from(value: &Mutez) -> Self {
+        value.0.into()
+    }
+}
+
+impl From<Mutez> for Int {
+    fn from(value: Mutez) -> Self {
+        From::<&Mutez>::from(&value)
     }
 }
 
@@ -265,10 +306,10 @@ impl_op!(Add, add);
 impl_op!(Sub, sub);
 impl_op!(Div, div);
 impl_op!(Mul, mul);
+impl_op!(Rem, rem);
 impl_op!(BitOr, bitor);
 impl_op!(BitAnd, bitand);
 impl_op!(BitXor, bitxor);
-
 
 #[cfg(test)]
 mod test {

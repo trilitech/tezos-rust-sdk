@@ -1,15 +1,17 @@
 use derive_more::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Div, DivAssign,
-    Mul, MulAssign, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign, Sub, SubAssign,
+    Mul, MulAssign, Neg, Not, Octal, Rem, RemAssign, Shl, ShlAssign, Shr, ShrAssign, Sub,
+    SubAssign,
 };
 use lazy_static::lazy_static;
-use num_bigint::{BigInt, BigUint};
+use num_bigint::{BigInt, BigUint, Sign};
 use num_traits::{Num, ToPrimitive};
 use regex::Regex;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Debug, Display},
+    ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Rem, Sub},
     str::FromStr,
 };
 
@@ -30,6 +32,7 @@ lazy_static! {
     AddAssign,
     PartialEq,
     PartialOrd,
+    Ord,
     Debug,
     Eq,
     Clone,
@@ -52,6 +55,8 @@ lazy_static! {
     ShrAssign,
     Sub,
     SubAssign,
+    Neg,
+    Not,
 )]
 #[div(forward)]
 #[div_assign(forward)]
@@ -96,8 +101,17 @@ impl Int {
         self.0.to_string()
     }
 
-    pub fn value(&self) -> &BigInt {
+    pub fn value<'a>(&'a self) -> &'a BigInt {
         &self.0
+    }
+
+    pub fn into_parts(self) -> (Sign, Nat) {
+        let (s, uint) = self.0.into_parts();
+        (s, uint.into())
+    }
+
+    pub fn abs(self) -> Nat {
+        self.into_parts().1.into()
     }
 }
 
@@ -280,9 +294,38 @@ impl TryFrom<Int> for BigUint {
     }
 }
 
+// Fix pending on https://github.com/JelteF/derive_more/issues/156
+macro_rules! impl_op_as_ref {
+    ($O:ident, $op:ident) => {
+        impl<'a, 'b> $O<&'b Int> for &'a Int {
+            type Output = Int;
+
+            fn $op(self, rhs: &'b Int) -> Self::Output {
+                Int($O::$op(&self.0, &rhs.0))
+            }
+        }
+    };
+}
+
+impl_op_as_ref!(Add, add);
+impl_op_as_ref!(Sub, sub);
+impl_op_as_ref!(Div, div);
+impl_op_as_ref!(Mul, mul);
+impl_op_as_ref!(Rem, rem);
+impl_op_as_ref!(BitOr, bitor);
+impl_op_as_ref!(BitAnd, bitand);
+impl_op_as_ref!(BitXor, bitxor);
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn bigint_into() -> Result<()> {
+        let n: BigInt = BigInt::from(0);
+        let _i: Int = n.into();
+        Ok(())
+    }
 
     #[test]
     fn test_valid_integers() -> Result<()> {
