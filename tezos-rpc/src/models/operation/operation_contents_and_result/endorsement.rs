@@ -62,6 +62,9 @@ pub struct EndorsementMetadata {
     /// integer ∈ [-2^30, 2^30]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub endorsement_power: Option<i32>,
+    /// Baking power of the delegate (added in Tallinn protocol)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub baking_power: Option<String>,
     /// Legacy field (used in old protocols)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slots: Option<Vec<u16>>,

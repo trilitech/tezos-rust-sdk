@@ -624,6 +624,8 @@ make_instructions!(
     (SplitTicket, SPLIT_TICKET, split_ticket, 138),
     (JoinTickets, JOIN_TICKETS, join_ticket, 139),
     (OpenChest, OPEN_CHEST, open_chest, 143),
+    (IndexAddress, INDEX_ADDRESS, index_address, 159),
+    (GetAddressIndex, GET_ADDRESS_INDEX, get_address_index, 160),
 );
 
 impl From<Primitive> for crate::michelson::Primitive {

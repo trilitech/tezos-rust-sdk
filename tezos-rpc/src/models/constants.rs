@@ -83,15 +83,17 @@ pub struct Constants {
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
     pub baking_reward_fixed_portion: Option<BigInt>,
-    /// Mutez
+    /// Mutez (renamed to baking_reward_bonus_per_block in Tallinn)
     #[serde(
         default,
+        alias = "baking_reward_bonus_per_block",
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
     pub baking_reward_bonus_per_slot: Option<BigInt>,
-    /// Mutez
+    /// Mutez (renamed to attesting_reward_per_block in Tallinn)
     #[serde(
         default,
+        alias = "attesting_reward_per_block",
         deserialize_with = "serde_utils::option_number_of_option_string"
     )]
     pub endorsing_reward_per_slot: Option<BigInt>,

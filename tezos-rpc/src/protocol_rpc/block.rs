@@ -256,4 +256,52 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_get_tallinn_block() -> Result<(), Error> {
+        let server = MockServer::start();
+        let rpc_url = server.base_url();
+
+        let block_id = BlockId::Level(1839179);
+
+        server.mock(|when, then| {
+            when.method(GET)
+                .path(super::path(TezosRpcChainId::Main.value(), &block_id));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(include_str!("block/__TEST_DATA__/block_tallinn.json"));
+        });
+        let client = TezosRpc::new(rpc_url);
+
+        let block = client
+            .get_block()
+            .block_id(&block_id)
+            .metadata(super::MetadataArg::Always)
+            .send()
+            .await?;
+
+        assert_eq!(
+            block.protocol,
+            "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu"
+                .try_into()
+                .unwrap()
+        );
+        assert_eq!(block.chain_id, "NetXe8DbhW9A1eS".try_into().unwrap());
+        assert_eq!(block.header.level, 1839179);
+        assert_eq!(block.operations.len(), 4);
+
+        let metadata = block.metadata.expect("Block has metadata");
+        assert_eq!(
+            metadata.next_protocol,
+            "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu"
+                .try_into()
+                .unwrap()
+        );
+        assert_eq!(
+            metadata.baker,
+            Some("tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M".try_into().unwrap())
+        );
+
+        Ok(())
+    }
 }

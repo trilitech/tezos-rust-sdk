@@ -1,0 +1,423 @@
+{
+  "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+  "chain_id": "NetXe8DbhW9A1eS",
+  "hash": "BMRN5vh3T7Z7jQdrCQ8YVdMRFn8GtqYczSQSfAaya7PAgn19pny",
+  "header": {
+    "level": 1839179,
+    "proto": 2,
+    "predecessor": "BLCbhyS8nf3dA3mWRn6gmjBaL3zWNMRMDbnBSsJV2caa4924b9n",
+    "timestamp": "2026-02-12T19:45:11Z",
+    "validation_pass": 4,
+    "operations_hash": "LLoa3PmoK9329gxAUDVRKZ3Lo4HGcu9FftRJz4yNyN7bMU6ZVny8Q",
+    "fitness": ["02", "001c104b", "", "ffffffff", "00000000"],
+    "context": "CoUupZ1RGwR17Na2R6BXFgyQvMTod8CwntdMYbcQEmS9q8xXsfSf",
+    "payload_hash": "vh1jW6LTzc1NDdJoiQt8LW8VXYdP4qthyhtNsZPKJSJZyGP1QkmM",
+    "payload_round": 0,
+    "proof_of_work_nonce": "d7d4b0ae00000000",
+    "liquidity_baking_toggle_vote": "pass",
+    "signature": "sigRhD59Dq5EdHyjvaXGGcs53ucrYSzeUBZNVSZ3Tp4bqGc2DFZBFWE4NGV7epfePNhHteNjTuf6PQgyRDXyuM4znysnV4DY"
+  },
+  "metadata": {
+    "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+    "next_protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+    "test_chain_status": { "status": "not_running" },
+    "max_operations_ttl": 150,
+    "max_operation_data_length": 32768,
+    "max_block_header_length": 289,
+    "max_operation_list_length": [
+      { "max_size": 4194304, "max_op": 2048 },
+      { "max_size": 32768 },
+      { "max_size": 135168, "max_op": 132 },
+      { "max_size": 524288 }
+    ],
+    "proposer": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+    "baker": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+    "level_info": {
+      "level": 1839179,
+      "level_position": 1839178,
+      "cycle": 6130,
+      "cycle_position": 178,
+      "expected_commitment": false
+    },
+    "voting_period_info": {
+      "voting_period": {
+        "index": 6130,
+        "kind": "proposal",
+        "start_position": 1839000
+      },
+      "position": 178,
+      "remaining": 121
+    },
+    "nonce_hash": null,
+    "deactivated": [],
+    "balance_updates": [
+      {
+        "kind": "accumulator",
+        "category": "block fees",
+        "change": "-750",
+        "origin": "block"
+      },
+      {
+        "kind": "contract",
+        "contract": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+        "change": "750",
+        "origin": "block"
+      },
+      {
+        "kind": "minted",
+        "category": "baking rewards",
+        "change": "-290922523",
+        "origin": "block"
+      },
+      {
+        "kind": "freezer",
+        "category": "deposits",
+        "staker": { "baker_own_stake": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M" },
+        "change": "290922523",
+        "origin": "block"
+      },
+      {
+        "kind": "minted",
+        "category": "baking rewards",
+        "change": "-16982023",
+        "origin": "block"
+      },
+      {
+        "kind": "contract",
+        "contract": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+        "change": "16982023",
+        "origin": "block"
+      },
+      {
+        "kind": "minted",
+        "category": "baking bonuses",
+        "change": "-290922523",
+        "origin": "block"
+      },
+      {
+        "kind": "freezer",
+        "category": "deposits",
+        "staker": { "baker_own_stake": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M" },
+        "change": "290922523",
+        "origin": "block"
+      },
+      {
+        "kind": "minted",
+        "category": "baking bonuses",
+        "change": "-16982023",
+        "origin": "block"
+      },
+      {
+        "kind": "contract",
+        "contract": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+        "change": "16982023",
+        "origin": "block"
+      }
+    ],
+    "liquidity_baking_toggle_ema": 7776272,
+    "implicit_operations_results": [],
+    "proposer_consensus_key": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+    "baker_consensus_key": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+    "consumed_milligas": "3000000",
+    "dal_attestation": "256",
+    "all_bakers_attest_activation_level": {
+      "level": 15601,
+      "level_position": 15600,
+      "cycle": 52,
+      "cycle_position": 0,
+      "expected_commitment": false
+    },
+    "attestations": {
+      "total_committee_power": "2321443233846163",
+      "threshold": "1547739367478564",
+      "recorded_power": "2321443233846163"
+    },
+    "preattestations": null
+  },
+  "operations": [
+    [
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "ooSWSBDWLX4EGweftP2be5fCXwmyGdHHK1Ntcs1u7o3EtSRfSpw",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestation_with_dal",
+            "slot": 1,
+            "level": 1839178,
+            "round": 0,
+            "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC",
+            "dal_attestation": "256",
+            "metadata": {
+              "delegate": "tz1N29q5T3jJ2i1JEWHax7q1NRkDMADj6fof",
+              "consensus_power": {
+                "slots": 439,
+                "baking_power": "135574626860539"
+              },
+              "consensus_key": "tz1N29q5T3jJ2i1JEWHax7q1NRkDMADj6fof"
+            }
+          }
+        ],
+        "signature": "sigiZq6cAaYUf1nMLTaa62CUKxT2BY9p11a8YCod3Hm5txjfFyM8YddP6r7PJjiAkJubdPLUqcRhyFGkXo63oot23utHEqTd"
+      },
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "ooJGA5UdYkYLytkTASpah2GZnLqb71aoFsHLHVc9G5rhKT2LZJP",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestation",
+            "slot": 3,
+            "level": 1839178,
+            "round": 0,
+            "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC",
+            "metadata": {
+              "delegate": "tz1RuHDSj9P7mNNhfKxsyLGRDahTX5QD1DdP",
+              "consensus_power": {
+                "slots": 8,
+                "baking_power": "3272193514211"
+              },
+              "consensus_key": "tz1RuHDSj9P7mNNhfKxsyLGRDahTX5QD1DdP"
+            }
+          }
+        ],
+        "signature": "sigeiXz5nqwEyHPaTux1C7G1eHMjWfvsRAv4jpnSZmzi3msdmqAVtNbQFuAUQTzBN3zypbR1fovDnkxmSFMnLJ1wHZGRxRUC"
+      },
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "onvtjG1NWaGdzjJvuFe5AuNShYkj1pzZMK39WL8Vu4dQ2BjB57b",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestation_with_dal",
+            "slot": 5,
+            "level": 1839178,
+            "round": 0,
+            "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC",
+            "dal_attestation": "256",
+            "metadata": {
+              "delegate": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M",
+              "consensus_power": {
+                "slots": 3593,
+                "baking_power": "1199314725846956"
+              },
+              "consensus_key": "tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M"
+            }
+          }
+        ],
+        "signature": "sigZNazTBdxfEGXMecZDAKk6RDeNdubnCur8W6gSJDBftxGuuxVpSVHC7GtdWExu3a7wNNDbZqmZ1fKBJVPMBnnPx1MDKFvH"
+      },
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "oo5n8t7wpkuaQfa7qKJM96q59bPJHYZGSR1wbtThmsQP4XKMUpJ",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestation_with_dal",
+            "slot": 8,
+            "level": 1839178,
+            "round": 0,
+            "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC",
+            "dal_attestation": "256",
+            "metadata": {
+              "delegate": "tz1cjyja1TU6fiyiFav3mFAdnDsCReJ12hPD",
+              "consensus_power": {
+                "slots": 10,
+                "baking_power": "3212075244293"
+              },
+              "consensus_key": "tz1cjyja1TU6fiyiFav3mFAdnDsCReJ12hPD"
+            }
+          }
+        ],
+        "signature": "sigr8KScGwR7TVtrQM7b2sZy95f6fxTyQT4BTk2JBH4oLrwMcidrMasUPR3Bdo8mVC4chUP4NnYYwAiHaH8ksztt6VbQCyTM"
+      },
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "oor2jmGhdfYKVPopALziTK3E41UpP25YJYVBqt6tLi5rWnSdrz7",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestation_with_dal",
+            "slot": 10,
+            "level": 1839178,
+            "round": 0,
+            "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC",
+            "dal_attestation": "256",
+            "metadata": {
+              "delegate": "tz2TVuUkU2JaPdvs2hR6cJ8hXrEKU1y22WdY",
+              "consensus_power": {
+                "slots": 394,
+                "baking_power": "127648156896872"
+              },
+              "consensus_key": "tz2TVuUkU2JaPdvs2hR6cJ8hXrEKU1y22WdY"
+            }
+          }
+        ],
+        "signature": "sigUQuWGeWNf5Bmu22eAE6iqXuoGz19MBz72Z4ASErbfFXyMKn7ECVeR4LzoY5f4dPLb1gCxzhT5nabJSiNUDR74cc7QpoHP"
+      },
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "onsM3NyuZ1829dExZCe6jQHeUx8foRsov5642D1rUWuQK4BkapQ",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestation_with_dal",
+            "slot": 11,
+            "level": 1839178,
+            "round": 0,
+            "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC",
+            "dal_attestation": "256",
+            "metadata": {
+              "delegate": "tz3Q1fwk1vh3zm5LqyUV9e2wZBdaEXcovh2r",
+              "consensus_power": {
+                "slots": 317,
+                "baking_power": "103005121823818"
+              },
+              "consensus_key": "tz3Q1fwk1vh3zm5LqyUV9e2wZBdaEXcovh2r"
+            }
+          }
+        ],
+        "signature": "sigRXfzki4169Tzc7UCaoha1LbX3U8GnREUy9mJhWGR5VssUj8KgJ7VN1P4TRHS58Ug5mnynf4y5bcShQSJizrjFJhxtBuQn"
+      },
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "ontkN1ntGWSDnEPqmy28u4HcGoNh5zrHANzk2SSw6dK5rjxVXYT",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "attestations_aggregate",
+            "consensus_content": {
+              "level": 1839178,
+              "round": 0,
+              "block_payload_hash": "vh29UrUsuZfPfTFzxwUyapPU7FGZAooWEa7VAMvarfpv827yaYoC"
+            },
+            "committee": [
+              { "slot": 0 },
+              { "slot": 2, "dal_attestation": "256" },
+              { "slot": 4, "dal_attestation": "256" },
+              { "slot": 6 },
+              { "slot": 7, "dal_attestation": "256" },
+              { "slot": 9, "dal_attestation": "256" }
+            ],
+            "metadata": {
+              "committee": [
+                {
+                  "delegate": "tz1LzTSQU1ALHmxnw8PNhBkqH6pWxaXXAAtz",
+                  "consensus_pkh": "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze",
+                  "consensus_power": {
+                    "slots": 5,
+                    "baking_power": "507103192479"
+                  }
+                },
+                {
+                  "delegate": "tz1NNT9EERmcKekRq2vdv6e8TL3WQpY8AXSF",
+                  "consensus_pkh": "tz4UmdB1JufxWrapeLysYxK9J574oFgkaAYs",
+                  "consensus_power": {
+                    "slots": 1624,
+                    "baking_power": "551419652636632"
+                  }
+                },
+                {
+                  "delegate": "tz1TGKSrZrBpND3PELJ43nVdyadoeiM1WMzb",
+                  "consensus_pkh": "tz4CL39ZetWwcfGY3aZjiLmoTgFrCQ8XePui",
+                  "consensus_power": {
+                    "slots": 61,
+                    "baking_power": "19066648092968"
+                  }
+                },
+                {
+                  "delegate": "tz1XiVu2qdyg2Lwpq3rc9a46rdgjH2txuUsz",
+                  "consensus_pkh": "tz4BjdYWRsrYEgN9DFpgsWuNPvb14DNqSAZt",
+                  "consensus_power": {
+                    "slots": 4,
+                    "baking_power": "1661313591525"
+                  }
+                },
+                {
+                  "delegate": "tz1Zt8QQ9aBznYNk5LUBjtME9DuExomw9YRs",
+                  "consensus_pkh": "tz4XbGtqxNZDq6CJNVbxktoqSTu9Db6aXQHL",
+                  "consensus_power": {
+                    "slots": 522,
+                    "baking_power": "168887558361871"
+                  }
+                },
+                {
+                  "delegate": "tz1goQMG3jDRiS7RSvJGLD4a9X3ipXsEQwur",
+                  "consensus_pkh": "tz49S2NQ1ydxLGwJk6ETHXzcs6LtaESyTwot",
+                  "consensus_power": {
+                    "slots": 23,
+                    "baking_power": "7874057783999"
+                  }
+                }
+              ],
+              "total_consensus_power": {
+                "slots": 2239,
+                "baking_power": "749416333659474"
+              }
+            }
+          }
+        ],
+        "signature": "BLsigA7Xje4Ly6crdi4P7q6saYLBLj9KJ64sZshnKpGd3Xvh4YYtLcHSxPQiyXwyWLKY9EGiTEK4epbwQAJ3JM6bUX7p6DziBrM5q2iVXR6LdZHgNWboBrpRoBQJTQfMCdhLGEztntWhuf"
+      }
+    ],
+    [],
+    [],
+    [
+      {
+        "protocol": "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu",
+        "chain_id": "NetXe8DbhW9A1eS",
+        "hash": "op1AwQnHwHUMiZ2uA52SyVn8YE759CNhqxpSQqnEFy84Gp1htgV",
+        "branch": "BMChGXcUDgTpkhhUJqVBoHPejDQwGGB7JZze1CgEWuADTQYWy8m",
+        "contents": [
+          {
+            "kind": "dal_publish_commitment",
+            "source": "tz1c4cqB4PyiMe5i5bNLqtNHwxmvEyRhXN6R",
+            "fee": "750",
+            "counter": "1774583",
+            "gas_limit": "3000",
+            "storage_limit": "100",
+            "slot_header": {
+              "slot_index": 8,
+              "commitment": "sh26PwedsfDMLEKEHAat96MXnCQpA3myqyBpTF2CZXTZbfAqcUY1aomWpYDgHwNfdJ3oYULFxs",
+              "commitment_proof": "ac84e7486a888442f1369964e062b93833a5e0d4264fc1ed07f77b5750081662b4eada43fbcad30463d2fe820f96237b0e4202d38d71ce655491952658d64f1cc98663a42ba120ff01c2d0a979acc2293d8b4e3c9e4f249018562994a9e1b5ab"
+            },
+            "metadata": {
+              "balance_updates": [
+                {
+                  "kind": "contract",
+                  "contract": "tz1c4cqB4PyiMe5i5bNLqtNHwxmvEyRhXN6R",
+                  "change": "-750",
+                  "origin": "block"
+                },
+                {
+                  "kind": "accumulator",
+                  "category": "block fees",
+                  "change": "750",
+                  "origin": "block"
+                }
+              ],
+              "operation_result": {
+                "status": "applied",
+                "slot_header": {
+                  "version": "0",
+                  "level": 1839179,
+                  "index": 8,
+                  "commitment": "sh26PwedsfDMLEKEHAat96MXnCQpA3myqyBpTF2CZXTZbfAqcUY1aomWpYDgHwNfdJ3oYULFxs"
+                },
+                "consumed_milligas": "1332656"
+              }
+            }
+          }
+        ],
+        "signature": "sigcyumteeZk9hQsQZ336SgoqjPxKGw8Ls3cJMCrQRuZEeV4R5YB75mL5avTuEzaoJa2KAFCMHmBZtL1RfJeUCZSvvjcW6rv"
+      }
+    ]
+  ]
+}

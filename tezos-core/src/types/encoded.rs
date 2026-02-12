@@ -504,6 +504,23 @@ make_encoded_structs!(
     {
         use {
             internal::coder::EncodedBytesCoder,
+            types::encoded::GenericSignature,
+        }
+        struct bls_signature::BlsSignature;
+        coder: EncodedBytesCoder;
+        meta {
+            base58_prefix: "BLsig",
+            base58_length: 142,
+            bytes_prefix: [32, 121, 52, 135,],
+            bytes_length: 96,
+        }
+        extra_try_from {
+            &GenericSignature,
+        }
+    },
+    {
+        use {
+            internal::coder::EncodedBytesCoder,
         }
         struct protocol_hash::ProtocolHash;
         coder: EncodedBytesCoder;
