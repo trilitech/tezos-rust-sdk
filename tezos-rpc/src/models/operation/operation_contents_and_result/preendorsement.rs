@@ -52,7 +52,15 @@ pub struct PreendorsementMetadata {
     pub delegate: ImplicitAddress,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub balance_updates: Option<Vec<BalanceUpdate>>,
-    /// integer ∈ [-2^30, 2^30]
+    /// Pre-Tallinn protocols expose attesting weight as a single integer.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub endorsement_power: Option<i32>,
+    /// From Tallinn onward, attesting weight is `{slots, baking_power}`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consensus_power: Option<
+        crate::models::operation::operation_contents_and_result::endorsement::ConsensusPower,
+    >,
+    /// Consensus key of the delegate (added in Tallinn protocol).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consensus_key: Option<ImplicitAddress>,
 }

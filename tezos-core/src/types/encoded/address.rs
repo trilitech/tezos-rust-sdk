@@ -2,9 +2,9 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    contract_hash::ContractHash, ed25519_public_key_hash::Ed25519PublicKeyHash,
-    p256_public_key_hash::P256PublicKeyHash, secp256_k1_public_key_hash::Secp256K1PublicKeyHash,
-    Encoded, MetaEncoded, TraitMetaEncoded,
+    bls_public_key_hash::BlsPublicKeyHash, contract_hash::ContractHash,
+    ed25519_public_key_hash::Ed25519PublicKeyHash, p256_public_key_hash::P256PublicKeyHash,
+    secp256_k1_public_key_hash::Secp256K1PublicKeyHash, Encoded, MetaEncoded, TraitMetaEncoded,
 };
 use crate::{
     internal::coder::{AddressBytesCoder, ContractAddressBytesCoder, ImplicitAddressBytesCoder},
@@ -142,6 +142,7 @@ impl TryFrom<Address> for ContractHash {
 /// - [Ed25519PublicKeyHash]
 /// - [Secp256K1PublicKeyHash]
 /// - [P256PublicKeyHash]
+/// - [BlsPublicKeyHash]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(
     feature = "serde",
@@ -152,6 +153,7 @@ pub enum ImplicitAddress {
     TZ1(Ed25519PublicKeyHash),
     TZ2(Secp256K1PublicKeyHash),
     TZ3(P256PublicKeyHash),
+    TZ4(BlsPublicKeyHash),
 }
 
 impl ImplicitAddress {
@@ -159,12 +161,14 @@ impl ImplicitAddress {
         Ed25519PublicKeyHash::is_valid_base58(value)
             || Secp256K1PublicKeyHash::is_valid_base58(value)
             || P256PublicKeyHash::is_valid_base58(value)
+            || BlsPublicKeyHash::is_valid_base58(value)
     }
 
     pub fn is_valid_bytes(value: &[u8]) -> bool {
         Ed25519PublicKeyHash::is_valid_prefixed_bytes(value)
             || Secp256K1PublicKeyHash::is_valid_prefixed_bytes(value)
             || P256PublicKeyHash::is_valid_prefixed_bytes(value)
+            || BlsPublicKeyHash::is_valid_prefixed_bytes(value)
     }
 }
 
@@ -176,6 +180,7 @@ impl Encoded for ImplicitAddress {
             Self::TZ1(address) => address.value(),
             Self::TZ2(address) => address.value(),
             Self::TZ3(address) => address.value(),
+            Self::TZ4(address) => address.value(),
         }
     }
 
@@ -184,6 +189,7 @@ impl Encoded for ImplicitAddress {
             Self::TZ1(address) => address.meta(),
             Self::TZ2(address) => address.meta(),
             Self::TZ3(address) => address.meta(),
+            Self::TZ4(address) => address.meta(),
         }
     }
 
@@ -197,6 +203,9 @@ impl Encoded for ImplicitAddress {
         if P256PublicKeyHash::is_valid_base58(&value) {
             return Ok(Self::TZ3(P256PublicKeyHash::new(value)?));
         }
+        if BlsPublicKeyHash::is_valid_base58(&value) {
+            return Ok(Self::TZ4(BlsPublicKeyHash::new(value)?));
+        }
         Err(Error::InvalidBase58EncodedData { description: value })
     }
 }
@@ -207,6 +216,7 @@ impl From<ImplicitAddress> for String {
             ImplicitAddress::TZ1(value) => value.into(),
             ImplicitAddress::TZ2(value) => value.into(),
             ImplicitAddress::TZ3(value) => value.into(),
+            ImplicitAddress::TZ4(value) => value.into(),
         }
     }
 }
@@ -269,6 +279,12 @@ impl From<Secp256K1PublicKeyHash> for ImplicitAddress {
 impl From<P256PublicKeyHash> for ImplicitAddress {
     fn from(value: P256PublicKeyHash) -> Self {
         Self::TZ3(value)
+    }
+}
+
+impl From<BlsPublicKeyHash> for ImplicitAddress {
+    fn from(value: BlsPublicKeyHash) -> Self {
+        Self::TZ4(value)
     }
 }
 
@@ -491,6 +507,26 @@ mod test {
         let address: Address = "tz3hw2kqXhLUvY65ca1eety2oQTpAvd34R9Q".try_into()?;
         if let Address::Implicit(ImplicitAddress::TZ3(value)) = address {
             assert_eq!(value.value(), "tz3hw2kqXhLUvY65ca1eety2oQTpAvd34R9Q");
+            return Ok(());
+        }
+        Err(Error::InvalidConversion)
+    }
+
+    #[test]
+    fn test_tz4_address() -> Result<()> {
+        let address: Address = "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze".try_into()?;
+        if let Address::Implicit(value) = address {
+            assert_eq!(value.value(), "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze");
+            return Ok(());
+        }
+        Err(Error::InvalidConversion)
+    }
+
+    #[test]
+    fn test_tz4_implicit_address() -> Result<()> {
+        let address: Address = "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze".try_into()?;
+        if let Address::Implicit(ImplicitAddress::TZ4(value)) = address {
+            assert_eq!(value.value(), "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze");
             return Ok(());
         }
         Err(Error::InvalidConversion)

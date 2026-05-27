@@ -1,12 +1,17 @@
 pub mod activate_account;
+pub mod attestations_aggregate;
 pub mod ballot;
+pub mod dal_entrapment_evidence;
+pub mod dal_publish_commitment;
 pub mod delegation;
 pub mod double_baking_evidence;
+pub mod double_consensus_operation_evidence;
 pub mod double_endorsement_evidence;
 pub mod double_preendorsement_evidence;
 pub mod endorsement;
 pub mod failing_noop;
 pub mod origination;
+pub mod preattestations_aggregate;
 pub mod preendorsement;
 pub mod proposals;
 pub mod register_global_constant;

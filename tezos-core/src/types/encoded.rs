@@ -504,6 +504,35 @@ make_encoded_structs!(
     {
         use {
             internal::coder::EncodedBytesCoder,
+            types::encoded::GenericSignature,
+        }
+        struct bls_signature::BlsSignature;
+        coder: EncodedBytesCoder;
+        meta {
+            base58_prefix: "BLsig",
+            base58_length: 142,
+            bytes_prefix: [40, 171, 64, 207,],
+            bytes_length: 96,
+        }
+        extra_try_from {
+            &GenericSignature,
+        }
+        test {
+            string_value: "BLsigA7Xje4Ly6crdi4P7q6saYLBLj9KJ64sZshnKpGd3Xvh4YYtLcHSxPQiyXwyWLKY9EGiTEK4epbwQAJ3JM6bUX7p6DziBrM5q2iVXR6LdZHgNWboBrpRoBQJTQfMCdhLGEztntWhuf",
+            bytes_value: [
+                143, 159, 229, 250, 44, 162, 154, 92, 147, 16, 10, 32, 48, 94,
+                53, 172, 156, 26, 1, 205, 18, 218, 70, 253, 216, 77, 109, 12,
+                156, 148, 26, 143, 178, 95, 191, 41, 83, 187, 108, 168, 215, 35,
+                12, 154, 240, 20, 220, 140, 11, 74, 72, 47, 199, 204, 64, 136,
+                187, 227, 229, 111, 95, 4, 185, 165, 133, 146, 221, 110, 150,
+                213, 56, 200, 83, 57, 179, 181, 35, 161, 85, 69, 16, 209, 65,
+                170, 191, 168, 233, 183, 117, 114, 143, 71, 128, 221, 109, 66,
+            ],
+        }
+    },
+    {
+        use {
+            internal::coder::EncodedBytesCoder,
         }
         struct protocol_hash::ProtocolHash;
         coder: EncodedBytesCoder;
@@ -616,6 +645,26 @@ make_encoded_structs!(
             bytes_value: [
                 146, 174, 203, 241, 51, 100, 160, 131, 26, 170, 172, 13, 238, 138, 117, 165, 40, 48,
                 171, 55,
+            ],
+        }
+    },
+    {
+        use {
+            internal::coder::EncodedBytesCoder,
+        }
+        struct bls_public_key_hash::BlsPublicKeyHash;
+        coder: EncodedBytesCoder;
+        meta {
+            base58_prefix: "tz4",
+            base58_length: 36,
+            bytes_prefix: [6, 161, 166,],
+            bytes_length: 20,
+        }
+        test {
+            string_value: "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze",
+            bytes_value: [
+                224, 113, 36, 239, 252, 197, 27, 166, 32, 6, 146, 243, 232, 203, 142, 50, 179,
+                64, 227, 178,
             ],
         }
     },

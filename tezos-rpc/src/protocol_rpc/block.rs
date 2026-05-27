@@ -256,4 +256,163 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_get_tallinn_block() -> Result<(), Error> {
+        use crate::models::operation::kind::OperationKind;
+        use crate::models::operation::OperationContent;
+        use tezos_core::types::encoded::{Encoded, ImplicitAddress};
+
+        let server = MockServer::start();
+        let rpc_url = server.base_url();
+
+        let block_id = BlockId::Level(1839179);
+
+        server.mock(|when, then| {
+            when.method(GET)
+                .path(super::path(TezosRpcChainId::Main.value(), &block_id));
+            then.status(200)
+                .header("content-type", "application/json")
+                .body(include_str!("block/__TEST_DATA__/block_tallinn.json"));
+        });
+        let client = TezosRpc::new(rpc_url);
+
+        let block = client
+            .get_block()
+            .block_id(&block_id)
+            .metadata(super::MetadataArg::Always)
+            .send()
+            .await?;
+
+        assert_eq!(
+            block.protocol,
+            "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu"
+                .try_into()
+                .unwrap()
+        );
+        assert_eq!(block.chain_id, "NetXe8DbhW9A1eS".try_into().unwrap());
+        assert_eq!(block.header.level, 1839179);
+        assert_eq!(block.operations.len(), 4);
+
+        let metadata = block.metadata.expect("Block has metadata");
+        assert_eq!(
+            metadata.next_protocol,
+            "PtTALLiNtPec7mE7yY4m3k26J8Qukef3E3ehzhfXgFZKGtDdAXu"
+                .try_into()
+                .unwrap()
+        );
+        assert_eq!(
+            metadata.baker,
+            Some("tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M".try_into().unwrap())
+        );
+
+        let consensus_ops = &block.operations[0];
+        assert_eq!(consensus_ops.len(), 7);
+
+        for op in consensus_ops.iter().flat_map(|o| o.contents.iter()) {
+            assert!(
+                !matches!(op, OperationContent::Unknown(_)),
+                "Tallinn consensus operation deserialized as Unknown: {op:?}"
+            );
+        }
+
+        let attestation_with_dal_count = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .filter(|c| {
+                matches!(
+                    c,
+                    OperationContent::Endorsement(e) if e.kind == OperationKind::AttestationWithDal
+                )
+            })
+            .count();
+        assert_eq!(attestation_with_dal_count, 5);
+
+        let plain_attestation_count = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .filter(|c| {
+                matches!(
+                    c,
+                    OperationContent::Endorsement(e) if e.kind == OperationKind::Attestation
+                )
+            })
+            .count();
+        assert_eq!(plain_attestation_count, 1);
+
+        let aggregate = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .find_map(|c| match c {
+                OperationContent::AttestationsAggregate(agg) => Some(agg),
+                _ => None,
+            })
+            .expect("attestations_aggregate present");
+        assert_eq!(aggregate.kind, OperationKind::AttestationsAggregate);
+        assert_eq!(aggregate.consensus_content.level, 1839178);
+        assert_eq!(aggregate.committee.len(), 6);
+        let agg_meta = aggregate
+            .metadata
+            .as_ref()
+            .expect("aggregate metadata present");
+        assert_eq!(agg_meta.committee.len(), 6);
+        assert_eq!(
+            agg_meta.total_consensus_power.baking_power.as_deref(),
+            Some("749416333659474")
+        );
+        assert!(
+            matches!(agg_meta.committee[0].consensus_pkh, ImplicitAddress::TZ4(_)),
+            "expected committee[0].consensus_pkh to be a tz4 address, got {:?}",
+            agg_meta.committee[0].consensus_pkh
+        );
+
+        let endorsement = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .find_map(|c| match c {
+                OperationContent::Endorsement(e) if e.kind == OperationKind::AttestationWithDal => {
+                    Some(e)
+                }
+                _ => None,
+            })
+            .expect("attestation_with_dal present");
+        let consensus_power = endorsement
+            .metadata
+            .as_ref()
+            .and_then(|m| m.consensus_power.as_ref())
+            .expect("consensus_power present on attestation_with_dal");
+        assert_eq!(consensus_power.slots, 439);
+        assert_eq!(
+            consensus_power.baking_power.as_deref(),
+            Some("135574626860539")
+        );
+
+        let manager_ops = &block.operations[3];
+        let dal_publish = manager_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .find_map(|c| match c {
+                OperationContent::DalPublishCommitment(dp) => Some(dp),
+                _ => None,
+            })
+            .expect("dal_publish_commitment present");
+        assert_eq!(dal_publish.kind, OperationKind::DalPublishCommitment);
+        assert_eq!(dal_publish.slot_header.slot_index, 8);
+
+        let aggregate_signature = consensus_ops
+            .iter()
+            .find(|o| {
+                o.contents
+                    .iter()
+                    .any(|c| matches!(c, OperationContent::AttestationsAggregate(_)))
+            })
+            .and_then(|o| o.signature.as_ref())
+            .expect("aggregate signature present");
+        let bls_bytes = aggregate_signature
+            .to_bytes()
+            .expect("BLS signature must round-trip to bytes");
+        assert_eq!(bls_bytes.len(), 96);
+
+        Ok(())
+    }
 }
