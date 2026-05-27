@@ -31,8 +31,8 @@ pub struct SlotHeader {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DalPublishCommitmentMetadata {
-    #[serde(default)]
-    pub balance_updates: Vec<BalanceUpdate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub balance_updates: Option<Vec<BalanceUpdate>>,
     pub operation_result: DalPublishCommitmentResult,
 }
 

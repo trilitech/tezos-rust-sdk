@@ -261,7 +261,7 @@ mod tests {
     async fn test_get_tallinn_block() -> Result<(), Error> {
         use crate::models::operation::kind::OperationKind;
         use crate::models::operation::OperationContent;
-        use tezos_core::types::encoded::Encoded;
+        use tezos_core::types::encoded::{Encoded, ImplicitAddress};
 
         let server = MockServer::start();
         let rpc_url = server.base_url();
@@ -359,6 +359,14 @@ mod tests {
         assert_eq!(
             agg_meta.total_consensus_power.baking_power.as_deref(),
             Some("749416333659474")
+        );
+        assert!(
+            matches!(
+                agg_meta.committee[0].consensus_pkh,
+                ImplicitAddress::TZ4(_)
+            ),
+            "expected committee[0].consensus_pkh to be a tz4 address, got {:?}",
+            agg_meta.committee[0].consensus_pkh
         );
 
         let endorsement = consensus_ops
