@@ -10,12 +10,27 @@ pub enum OperationKind {
     Endorsement,
     #[serde(alias = "preattestation")]
     Preendorsement,
+    /// Tallinn (proto 024) introduces attestations that also carry a DAL
+    /// attestation payload; the on-chain kind name is `attestation_with_dal`.
+    AttestationWithDal,
+    /// Tallinn aggregate of multiple preattestations into a single BLS-signed
+    /// operation.
+    PreattestationsAggregate,
+    /// Tallinn aggregate of multiple attestations into a single BLS-signed
+    /// operation.
+    AttestationsAggregate,
     SeedNonceRevelation,
+    /// Pre-Seoul (≤ proto 021) used split kinds; Seoul (023) and Tallinn (024)
+    /// unify them as `double_consensus_operation_evidence`.
     #[serde(alias = "double_attestation_evidence")]
     DoubleEndorsementEvidence,
     #[serde(alias = "double_preattestation_evidence")]
     DoublePreendorsementEvidence,
+    DoubleConsensusOperationEvidence,
+    DalEntrapmentEvidence,
     DoubleBakingEvidence,
+    VdfRevelation,
+    DrainDelegate,
     ActivateAccount,
     Proposals,
     Ballot,
@@ -40,4 +55,5 @@ pub enum OperationKind {
     ScRollupAddMessages,
     ScRollupCement,
     ScRollupPublish,
+    DalPublishCommitment,
 }

@@ -6,14 +6,18 @@ pub mod operation_result;
 use {
     self::{
         operation_contents_and_result::activate_account::ActivateAccount,
+        operation_contents_and_result::attestations_aggregate::AttestationsAggregate,
         operation_contents_and_result::ballot::Ballot,
+        operation_contents_and_result::dal_publish_commitment::DalPublishCommitment,
         operation_contents_and_result::delegation::Delegation,
         operation_contents_and_result::double_baking_evidence::DoubleBakingEvidence,
+        operation_contents_and_result::double_consensus_operation_evidence::DoubleConsensusOperationEvidence,
         operation_contents_and_result::double_endorsement_evidence::DoubleEndorsementEvidence,
         operation_contents_and_result::double_preendorsement_evidence::DoublePreendorsementEvidence,
         operation_contents_and_result::endorsement::Endorsement,
         operation_contents_and_result::failing_noop::FailingNoop,
         operation_contents_and_result::origination::Origination,
+        operation_contents_and_result::preattestations_aggregate::PreattestationsAggregate,
         operation_contents_and_result::preendorsement::Preendorsement,
         operation_contents_and_result::proposals::Proposals,
         operation_contents_and_result::register_global_constant::RegisterGlobalConstant,
@@ -84,9 +88,23 @@ impl From<tezos_operation::operations::SignedOperation> for Operation {
     }
 }
 
+/// `#[serde(untagged)]` tries variants in declaration order and picks the first
+/// one that deserializes. Most existing operation structs only require their
+/// `kind` field and treat the rest as optional, so the more distinctive
+/// (i.e. with extra required fields) variants must be listed first to avoid
+/// being swallowed by a more permissive variant — notably the Tallinn-specific
+/// ops, which collide with manager-op shapes that only require
+/// `kind`/`source`/`fee`/`counter`/`gas_limit`/`storage_limit`.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum OperationContent {
+    // Tallinn (proto 024) — these have distinctive required fields
+    // (`consensus_content`+`committee`, `slot_header`, `slot`+`op1`+`op2`)
+    // and must be matched before the older permissive shapes below.
+    AttestationsAggregate(AttestationsAggregate),
+    PreattestationsAggregate(PreattestationsAggregate),
+    DalPublishCommitment(DalPublishCommitment),
+    DoubleConsensusOperationEvidence(DoubleConsensusOperationEvidence),
     // Present in alpha protocol
     Endorsement(Endorsement),
     Preendorsement(Preendorsement),
@@ -217,6 +235,10 @@ impl TryFrom<OperationContent> for tezos_operation::operations::OperationContent
             | OperationContent::TxRollupRejection(_)
             | OperationContent::TransferTicket(_)
             | OperationContent::TxRollupDispatchTickets(_)
+            | OperationContent::DoubleConsensusOperationEvidence(_)
+            | OperationContent::AttestationsAggregate(_)
+            | OperationContent::PreattestationsAggregate(_)
+            | OperationContent::DalPublishCommitment(_)
             | OperationContent::Unknown(_) => Err(Error::OperationNotSupported),
         }
     }

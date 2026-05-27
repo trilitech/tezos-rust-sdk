@@ -259,6 +259,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_tallinn_block() -> Result<(), Error> {
+        use crate::models::operation::kind::OperationKind;
+        use crate::models::operation::OperationContent;
+        use tezos_core::types::encoded::Encoded;
+
         let server = MockServer::start();
         let rpc_url = server.base_url();
 
@@ -301,6 +305,108 @@ mod tests {
             metadata.baker,
             Some("tz1TnEtqDV9mZyts2pfMy6Jw1BTPs4LMjL8M".try_into().unwrap())
         );
+
+        let consensus_ops = &block.operations[0];
+        assert_eq!(consensus_ops.len(), 7);
+
+        for op in consensus_ops.iter().flat_map(|o| o.contents.iter()) {
+            assert!(
+                !matches!(op, OperationContent::Unknown(_)),
+                "Tallinn consensus operation deserialized as Unknown: {op:?}"
+            );
+        }
+
+        let attestation_with_dal_count = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .filter(|c| {
+                matches!(
+                    c,
+                    OperationContent::Endorsement(e) if e.kind == OperationKind::AttestationWithDal
+                )
+            })
+            .count();
+        assert_eq!(attestation_with_dal_count, 5);
+
+        let plain_attestation_count = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .filter(|c| {
+                matches!(
+                    c,
+                    OperationContent::Endorsement(e) if e.kind == OperationKind::Endorsement
+                )
+            })
+            .count();
+        assert_eq!(plain_attestation_count, 1);
+
+        let aggregate = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .find_map(|c| match c {
+                OperationContent::AttestationsAggregate(agg) => Some(agg),
+                _ => None,
+            })
+            .expect("attestations_aggregate present");
+        assert_eq!(aggregate.kind, OperationKind::AttestationsAggregate);
+        assert_eq!(aggregate.consensus_content.level, 1839178);
+        assert_eq!(aggregate.committee.len(), 6);
+        let agg_meta = aggregate
+            .metadata
+            .as_ref()
+            .expect("aggregate metadata present");
+        assert_eq!(agg_meta.committee.len(), 6);
+        assert_eq!(
+            agg_meta.total_consensus_power.baking_power.as_deref(),
+            Some("749416333659474")
+        );
+
+        let endorsement = consensus_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .find_map(|c| match c {
+                OperationContent::Endorsement(e) if e.kind == OperationKind::AttestationWithDal => {
+                    Some(e)
+                }
+                _ => None,
+            })
+            .expect("attestation_with_dal present");
+        let consensus_power = endorsement
+            .metadata
+            .as_ref()
+            .and_then(|m| m.consensus_power.as_ref())
+            .expect("consensus_power present on attestation_with_dal");
+        assert_eq!(consensus_power.slots, 439);
+        assert_eq!(
+            consensus_power.baking_power.as_deref(),
+            Some("135574626860539")
+        );
+
+        let manager_ops = &block.operations[3];
+        let dal_publish = manager_ops
+            .iter()
+            .flat_map(|o| o.contents.iter())
+            .find_map(|c| match c {
+                OperationContent::DalPublishCommitment(dp) => Some(dp),
+                _ => None,
+            })
+            .expect("dal_publish_commitment present");
+        assert_eq!(dal_publish.kind, OperationKind::DalPublishCommitment);
+        assert_eq!(dal_publish.slot_header.slot_index, 8);
+
+        let aggregate_signature = consensus_ops
+            .iter()
+            .find(|o| {
+                o.contents
+                    .iter()
+                    .any(|c| matches!(c, OperationContent::AttestationsAggregate(_)))
+            })
+            .and_then(|o| o.signature.as_ref())
+            .expect("aggregate signature present");
+        let bls_bytes = aggregate_signature
+            .to_bytes()
+            .expect("BLS signature must round-trip to bytes");
+        assert_eq!(bls_bytes.len(), 96);
 
         Ok(())
     }
