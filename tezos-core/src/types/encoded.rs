@@ -652,6 +652,26 @@ make_encoded_structs!(
         use {
             internal::coder::EncodedBytesCoder,
         }
+        struct bls_public_key_hash::BlsPublicKeyHash;
+        coder: EncodedBytesCoder;
+        meta {
+            base58_prefix: "tz4",
+            base58_length: 36,
+            bytes_prefix: [6, 161, 166,],
+            bytes_length: 20,
+        }
+        test {
+            string_value: "tz4VTzVFadeYtWypCknkYfLRXkfaBQXJgUze",
+            bytes_value: [
+                224, 113, 36, 239, 252, 197, 27, 166, 32, 6, 146, 243, 232, 203, 142, 50, 179,
+                64, 227, 178,
+            ],
+        }
+    },
+    {
+        use {
+            internal::coder::EncodedBytesCoder,
+        }
         struct secp256_k1_scalar::Secp256K1Scalar;
         coder: EncodedBytesCoder;
         meta {
