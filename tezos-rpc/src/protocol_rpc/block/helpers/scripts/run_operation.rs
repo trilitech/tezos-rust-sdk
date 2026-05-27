@@ -111,7 +111,8 @@ mod tests {
                         level: Some(2510083),
                         round: Some(0),
                         block_payload_hash: Some("vh32fG1tMNPtzZiKPHinfLPSAU3m2piFSgud4jBdaGSKJQH6q7Xd".try_into().unwrap()),
-                        metadata: None
+                        metadata: None,
+                        dal_attestation: None,
                     }
                 )
             ],
