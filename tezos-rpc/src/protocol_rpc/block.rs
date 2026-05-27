@@ -334,7 +334,7 @@ mod tests {
             .filter(|c| {
                 matches!(
                     c,
-                    OperationContent::Endorsement(e) if e.kind == OperationKind::Endorsement
+                    OperationContent::Endorsement(e) if e.kind == OperationKind::Attestation
                 )
             })
             .count();
