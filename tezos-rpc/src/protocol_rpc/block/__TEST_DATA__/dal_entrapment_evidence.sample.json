@@ -1,0 +1,28 @@
+{
+  "kind": "dal_entrapment_evidence",
+  "attestation": {
+    "branch": "BMLJapq1nxNo67Cak9nyU9p6EZ8DGK5NFjc4nVQYXwhHdmapAz7",
+    "operations": {
+      "kind": "attestation_with_dal",
+      "slot": 6,
+      "level": 13151123,
+      "round": 0,
+      "block_payload_hash": "vh1he5NXZcwZmGe3cGdepQU83C6Qky7m1tWJsShNnjT7amg8X7Jy",
+      "dal_attestation": "4294967295"
+    },
+    "signature": "sigrP9miXpMmFZpn8TbAy1j8RPFTvrzLHDE6ZtrFCQ4q7E1dzRomHXxca8SAtXtdj95s5CcZhMvm1nYQBQgcAxu7JGgiof5N"
+  },
+  "consensus_slot": 5,
+  "slot_index": 15,
+  "shard_with_proof": {
+    "shard": [
+      403,
+      [
+        "69494c5d6a472b7ad772a5ffb816530c02ef84ca4695ee59fb77ab7d53daa05d",
+        "b3b6e4e7f66e66911420eb05b1dbddd86b5ab32a1efb8df23e3625d59d0e343c",
+        "e46ae1ce4bd90501860e0d57862aa007eccfba2a38e19992450c97d2d665c20a"
+      ]
+    ],
+    "proof": "sh1whSSiBcztN8LCEvjebGwVfCyueMdkAe8ZFtZDF4A9nwF5AznfCwEZuComZtsodbkAsdBGkz"
+  }
+}

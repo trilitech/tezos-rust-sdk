@@ -8,6 +8,7 @@ use {
         operation_contents_and_result::activate_account::ActivateAccount,
         operation_contents_and_result::attestations_aggregate::AttestationsAggregate,
         operation_contents_and_result::ballot::Ballot,
+        operation_contents_and_result::dal_entrapment_evidence::DalEntrapmentEvidence,
         operation_contents_and_result::dal_publish_commitment::DalPublishCommitment,
         operation_contents_and_result::delegation::Delegation,
         operation_contents_and_result::double_baking_evidence::DoubleBakingEvidence,
@@ -103,6 +104,7 @@ pub enum OperationContent {
     // and must be matched before the older permissive shapes below.
     AttestationsAggregate(AttestationsAggregate),
     PreattestationsAggregate(PreattestationsAggregate),
+    DalEntrapmentEvidence(DalEntrapmentEvidence),
     DalPublishCommitment(DalPublishCommitment),
     DoubleConsensusOperationEvidence(DoubleConsensusOperationEvidence),
     // Present in alpha protocol
@@ -238,6 +240,7 @@ impl TryFrom<OperationContent> for tezos_operation::operations::OperationContent
             | OperationContent::DoubleConsensusOperationEvidence(_)
             | OperationContent::AttestationsAggregate(_)
             | OperationContent::PreattestationsAggregate(_)
+            | OperationContent::DalEntrapmentEvidence(_)
             | OperationContent::DalPublishCommitment(_)
             | OperationContent::Unknown(_) => Err(Error::OperationNotSupported),
         }

@@ -1,6 +1,7 @@
 pub mod activate_account;
 pub mod attestations_aggregate;
 pub mod ballot;
+pub mod dal_entrapment_evidence;
 pub mod dal_publish_commitment;
 pub mod delegation;
 pub mod double_baking_evidence;
