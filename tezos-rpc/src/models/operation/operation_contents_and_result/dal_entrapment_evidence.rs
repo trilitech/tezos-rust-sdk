@@ -32,8 +32,9 @@ mod tests {
     use super::*;
     use crate::models::operation::kind::OperationKind;
 
-    const SAMPLE: &str =
-        include_str!("../../../protocol_rpc/block/__TEST_DATA__/dal_entrapment_evidence.sample.json");
+    const SAMPLE: &str = include_str!(
+        "../../../protocol_rpc/block/__TEST_DATA__/dal_entrapment_evidence.sample.json"
+    );
 
     #[test]
     fn test_deserialize() {

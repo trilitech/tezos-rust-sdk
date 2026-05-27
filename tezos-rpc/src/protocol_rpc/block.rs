@@ -361,10 +361,7 @@ mod tests {
             Some("749416333659474")
         );
         assert!(
-            matches!(
-                agg_meta.committee[0].consensus_pkh,
-                ImplicitAddress::TZ4(_)
-            ),
+            matches!(agg_meta.committee[0].consensus_pkh, ImplicitAddress::TZ4(_)),
             "expected committee[0].consensus_pkh to be a tz4 address, got {:?}",
             agg_meta.committee[0].consensus_pkh
         );
