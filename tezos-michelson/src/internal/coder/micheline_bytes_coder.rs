@@ -1,3 +1,4 @@
+use super::protocol_primitives;
 use tezos_core::internal::{
     coder::{ConsumingDecoder, Decoder, Encoder, IntegerBytesCoder},
     consumable_list::{ConsumableBytes, ConsumableList},
@@ -9,7 +10,6 @@ use crate::{
         literals::Literal, primitive_application::PrimitiveApplication, sequence::Sequence,
         Micheline,
     },
-    michelson::Primitive,
     Error, Result,
 };
 
@@ -95,24 +95,24 @@ impl ConsumingDecoder<Literal, u8, Error> for MichelineBytesCoder {
 
 impl MichelineBytesCoder {
     fn encode_prim_no_args_no_annots(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
+        let tag = protocol_primitives::tag(value.prim())?;
 
-        Ok([Tag::PrimNoArgsNoAnnots.value(), &[prim.tag()]].concat())
+        Ok([Tag::PrimNoArgsNoAnnots.value(), &[tag]].concat())
     }
 
     fn encode_prim_no_args_some_annots(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
+        let tag = protocol_primitives::tag(value.prim())?;
 
         Ok([
             Tag::PrimNoArgsSomeAnnots.value(),
-            &[prim.tag()],
+            &[tag],
             &Self::encode_annots(value),
         ]
         .concat())
     }
 
     fn encode_prim_1_arg_no_annots(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
+        let tag = protocol_primitives::tag(value.prim())?;
         let arg_bytes = value
             .args()
             .as_ref()
@@ -121,11 +121,11 @@ impl MichelineBytesCoder {
             .map(|arg| arg.to_bytes())
             .ok_or(Error::InvalidPrimitiveApplication)??;
 
-        Ok([Tag::Prim1ArgNoAnnots.value(), &[prim.tag()], &arg_bytes].concat())
+        Ok([Tag::Prim1ArgNoAnnots.value(), &[tag], &arg_bytes].concat())
     }
 
     fn encode_prim_1_arg_some_annots(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
+        let tag = protocol_primitives::tag(value.prim())?;
         let arg_bytes = value
             .args()
             .as_ref()
@@ -136,7 +136,7 @@ impl MichelineBytesCoder {
 
         Ok([
             Tag::Prim1ArgSomeAnnots.value(),
-            &[prim.tag()],
+            &[tag],
             &arg_bytes,
             &Self::encode_annots(value),
         ]
@@ -144,7 +144,7 @@ impl MichelineBytesCoder {
     }
 
     fn encode_prim_2_args_no_annots(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
+        let tag = protocol_primitives::tag(value.prim())?;
         let first_arg_bytes = value
             .args()
             .as_ref()
@@ -163,7 +163,7 @@ impl MichelineBytesCoder {
 
         Ok([
             Tag::Prim2ArgsNoAnnots.value(),
-            &[prim.tag()],
+            &[tag],
             &first_arg_bytes,
             &second_arg_bytes,
         ]
@@ -171,7 +171,7 @@ impl MichelineBytesCoder {
     }
 
     fn encode_prim_2_args_some_annots(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
+        let tag = protocol_primitives::tag(value.prim())?;
         let first_arg_bytes = value
             .args()
             .as_ref()
@@ -190,7 +190,7 @@ impl MichelineBytesCoder {
 
         Ok([
             Tag::Prim2ArgsSomeAnnots.value(),
-            &[prim.tag()],
+            &[tag],
             &first_arg_bytes,
             &second_arg_bytes,
             &Self::encode_annots(value),
@@ -199,21 +199,19 @@ impl MichelineBytesCoder {
     }
 
     fn encode_prim_generic(value: &PrimitiveApplication) -> Result<Vec<u8>> {
-        let prim: Primitive = value.prim().try_into()?;
-        let args_bytes = value
+        let tag = protocol_primitives::tag(value.prim())?;
+        let mut args_bytes = Vec::new();
+        for arg in value
             .args()
             .as_ref()
             .ok_or(Error::InvalidPrimitiveApplication)?
-            .iter()
-            .map(|arg| arg.to_bytes())
-            .collect::<Result<Vec<_>>>()?
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>();
+        {
+            args_bytes.extend(arg.to_bytes()?);
+        }
 
         Ok([
             Tag::PrimGeneric.value(),
-            &[prim.tag()],
+            &[tag],
             &utils::encode_bytes(&args_bytes),
             &Self::encode_annots(value),
         ]
@@ -232,36 +230,28 @@ impl MichelineBytesCoder {
     fn decode_prim_no_args_no_annots<CL: ConsumableList<u8>>(
         bytes: &mut CL,
     ) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
 
-        Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
-            None,
-            None,
-        ))
+        Ok(PrimitiveApplication::new(prim.to_owned(), None, None))
     }
 
     fn decode_prim_no_args_some_annots<CL: ConsumableList<u8>>(
         bytes: &mut CL,
     ) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
         let annots = utils::decode_annots(bytes)?;
 
-        Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
-            None,
-            annots,
-        ))
+        Ok(PrimitiveApplication::new(prim.to_owned(), None, annots))
     }
 
     fn decode_prim_1_arg_no_annots<CL: ConsumableList<u8>>(
         bytes: &mut CL,
     ) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
         let arg = Self::decode_consuming(bytes)?;
 
         Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
+            prim.to_owned(),
             Some(vec![arg]),
             None,
         ))
@@ -270,12 +260,12 @@ impl MichelineBytesCoder {
     fn decode_prim_1_arg_some_annots<CL: ConsumableList<u8>>(
         bytes: &mut CL,
     ) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
         let arg = Self::decode_consuming(bytes)?;
         let annots = utils::decode_annots(bytes)?;
 
         Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
+            prim.to_owned(),
             Some(vec![arg]),
             annots,
         ))
@@ -284,12 +274,12 @@ impl MichelineBytesCoder {
     fn decode_prim_2_args_no_annots<CL: ConsumableList<u8>>(
         bytes: &mut CL,
     ) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
         let first_arg = Self::decode_consuming(bytes)?;
         let second_arg = Self::decode_consuming(bytes)?;
 
         Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
+            prim.to_owned(),
             Some(vec![first_arg, second_arg]),
             None,
         ))
@@ -298,20 +288,20 @@ impl MichelineBytesCoder {
     fn decode_prim_2_args_some_annots<CL: ConsumableList<u8>>(
         bytes: &mut CL,
     ) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
         let first_arg = Self::decode_consuming(bytes)?;
         let second_arg = Self::decode_consuming(bytes)?;
         let annots = utils::decode_annots(bytes)?;
 
         Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
+            prim.to_owned(),
             Some(vec![first_arg, second_arg]),
             annots,
         ))
     }
 
     fn decode_prim_generic<CL: ConsumableList<u8>>(bytes: &mut CL) -> Result<PrimitiveApplication> {
-        let prim: Primitive = bytes.consume_first()?.try_into()?;
+        let prim = protocol_primitives::name(bytes.consume_first()?)?;
         let decoded_bytes = utils::decode_bytes(bytes)?;
         let mut args_bytes = ConsumableBytes::new(&decoded_bytes);
         let mut args: Vec<Micheline> = Vec::new();
@@ -326,7 +316,7 @@ impl MichelineBytesCoder {
         };
 
         Ok(PrimitiveApplication::new(
-            prim.name().to_owned(),
+            prim.to_owned(),
             Some(args),
             annots,
         ))
@@ -702,6 +692,132 @@ mod test {
             (
                 vec![int(0), try_string("abc").unwrap()].into(),
                 &[2, 0, 0, 0, 10, 0, 0, 1, 0, 0, 0, 3, 97, 98, 99],
+            ),
+        ]
+    }
+
+    #[test]
+    fn protocol_primitives_code_as_the_node_does() -> Result<()> {
+        for (name, value, node_hex) in node_forged_primitives() {
+            let node_bytes = hex::decode(node_hex).unwrap();
+            assert_eq!(
+                hex::encode(MichelineBytesCoder::encode(&value)?),
+                node_hex,
+                "{name}"
+            );
+            let decoded: Micheline = MichelineBytesCoder::decode(node_bytes.as_slice())?;
+            assert_eq!(decoded, value, "{name}");
+        }
+
+        Ok(())
+    }
+
+    fn prim(name: &str, args: Vec<Micheline>) -> Micheline {
+        let application = primitive_application(name);
+        if args.is_empty() {
+            application.into()
+        } else {
+            application.with_args(args).into()
+        }
+    }
+
+    fn code(values: Vec<Micheline>) -> Micheline {
+        sequence(values)
+    }
+
+    /// Each primitive beside the bytes a protocol 025 (`PsUshuai`) node forged
+    /// for it: the code field of an origination whose code is the value, from
+    /// `helpers/forge/operations`. `TICKET` and `sapling_transaction` each have
+    /// a `_DEPRECATED`/`_deprecated` counterpart at an earlier tag.
+    fn node_forged_primitives() -> Vec<(&'static str, Micheline, &'static str)> {
+        let nat = || prim("nat", vec![]);
+        vec![
+            (
+                "EMIT",
+                code(vec![primitive_application("EMIT")
+                    .with_args(vec![nat()])
+                    .with_annots(vec!["%changed".into()])
+                    .into()]),
+                "02000000100697036200000008256368616e676564",
+            ),
+            (
+                "VIEW",
+                code(vec![prim("VIEW", vec![try_string("get").unwrap(), nat()])]),
+                "020000000c079001000000036765740362",
+            ),
+            (
+                "view",
+                code(vec![prim(
+                    "view",
+                    vec![
+                        try_string("get").unwrap(),
+                        prim("unit", vec![]),
+                        nat(),
+                        code(vec![prim("CDR", vec![])]),
+                    ],
+                )]),
+                "020000001d0991000000130100000003676574036c03620200000002031700000000",
+            ),
+            (
+                "BYTES",
+                code(vec![prim("BYTES", vec![])]),
+                "0200000002039b",
+            ),
+            ("NAT", code(vec![prim("NAT", vec![])]), "0200000002039c"),
+            (
+                "IS_IMPLICIT_ACCOUNT",
+                code(vec![prim("IS_IMPLICIT_ACCOUNT", vec![])]),
+                "0200000002039e",
+            ),
+            (
+                "MIN_BLOCK_TIME",
+                code(vec![prim("MIN_BLOCK_TIME", vec![])]),
+                "02000000020395",
+            ),
+            (
+                "LAMBDA_REC",
+                code(vec![prim(
+                    "LAMBDA_REC",
+                    vec![nat(), nat(), code(vec![prim("DROP", vec![])])],
+                )]),
+                "020000001509990000000b036203620200000002032000000000",
+            ),
+            (
+                "Lambda_rec",
+                code(vec![prim(
+                    "PUSH",
+                    vec![
+                        prim("lambda", vec![nat(), nat()]),
+                        prim("Lambda_rec", vec![code(vec![prim("DROP", vec![])])]),
+                    ],
+                )]),
+                "02000000110743075e03620362059802000000020320",
+            ),
+            (
+                "TICKET",
+                code(vec![prim("TICKET", vec![])]),
+                "0200000002039a",
+            ),
+            (
+                "Ticket",
+                code(vec![prim("Ticket", vec![])]),
+                "0200000002039d",
+            ),
+            (
+                "sapling_transaction",
+                code(vec![prim(
+                    "NIL",
+                    vec![prim("sapling_transaction", vec![int(8)])],
+                )]),
+                "0200000006053d05960008",
+            ),
+            (
+                "constant",
+                code(vec![prim(
+                    "constant",
+                    vec![try_string("expruQN5r2umbZVHy6WynYM8f71F8zS4AERz9bugF8UkPBEqrHLuU8").unwrap()],
+                )]),
+                "020000003d059201000000366578707275514e357232756d625a5648793657796e594d3866373146387a53344145527a396275674638556b5042457172484c755538",
             ),
         ]
     }

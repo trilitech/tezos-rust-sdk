@@ -2,7 +2,7 @@ macro_rules! make_instructions {
     (
         $(
             (
-                $name:ident, $code:ident, $mod_name:ident, $tag:literal
+                $name:ident, $code:ident, $mod_name:ident
                 $(, metadata_type: $metadata_type:ty)?
                 $(, ($field_name:ident: $field_type:ty))*
                 $(, optional: ($opt_field_name:ident: $opt_field_type:ty))*
@@ -85,11 +85,11 @@ macro_rules! make_instructions {
             }
         }
 
-        make_primitive_enum!($($name, $code, $tag)+);
+        make_primitive_enum!($($name, $code)+);
 
         $(
             make_instruction!(
-                $name, $code, $mod_name, $tag
+                $name, $code, $mod_name
                 $(, metadata_type: $metadata_type)?
                 $(, ($field_name: $field_type))*
                 $(, optional: ($opt_field_name: $opt_field_type))*
@@ -101,7 +101,7 @@ macro_rules! make_instructions {
 
 macro_rules! make_instruction {
     (
-        $name:ident, $code:ident, $mod_name:ident, $tag:literal
+        $name:ident, $code:ident, $mod_name:ident
         $(, metadata_type: $metadata_type:ty)?
         $(, ($field_name:ident: $field_type:ty))*
         $(, optional: ($opt_field_name:ident: $opt_field_type:ty))*

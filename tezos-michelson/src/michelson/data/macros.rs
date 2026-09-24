@@ -5,7 +5,7 @@ macro_rules! make_all_data {
         })?,
         $(
             (
-                $name:ident, $mod_name:ident, $tag:literal
+                $name:ident, $mod_name:ident
                 $(, ($field_name:ident: $field_type:ty))*
                 $(, optional: ($opt_field_name:ident: $opt_field_type:ty))*
                 $(, boxed: ($boxed_field_name:ident: $boxed_field_type:ty))*
@@ -133,11 +133,11 @@ macro_rules! make_all_data {
             }
         }
 
-        make_primitive_enum!($($name, $name, $tag)+);
+        make_primitive_enum!($($name, $name)+);
 
         $(
             make_data!(
-                $name, $mod_name, $tag
+                $name, $mod_name
                 $(, ($field_name: $field_type))*
                 $(, optional: ($opt_field_name: $opt_field_type))*
                 $(, boxed: ($boxed_field_name: $boxed_field_type))*
@@ -148,7 +148,7 @@ macro_rules! make_all_data {
 }
 
 macro_rules! make_data {
-    ($name:ident, $mod_name:ident, $tag:literal) => {
+    ($name:ident, $mod_name:ident) => {
         mod $mod_name {
             use tezos_core::internal::traits::InnerValueRef;
             use crate::{
@@ -247,7 +247,7 @@ macro_rules! make_data {
         }
     };
     (
-        $name:ident, $mod_name:ident, $tag:literal
+        $name:ident, $mod_name:ident
         $(, ($field_name:ident: $field_type:ty))*
         $(, optional: ($opt_field_name:ident: $opt_field_type:ty))*
         $(, boxed: ($boxed_field_name:ident: $boxed_field_type:ty))*

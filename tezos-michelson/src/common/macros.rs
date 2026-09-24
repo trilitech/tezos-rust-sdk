@@ -1,12 +1,12 @@
 macro_rules! make_primitive_enum {
     (
-        $($name:ident, $code:ident, $tag:literal)+
+        $($name:ident, $code:ident)+
     ) => {
         /// Enum encapsulating all the various Tezos primitive types and values.
         #[derive(Debug, Clone, Copy, PartialEq)]
         #[repr(u8)]
         pub enum Primitive {
-            $($name = $tag,)*
+            $($name = crate::internal::coder::protocol_primitives::tag_of(stringify!($code)),)*
         }
 
         impl Primitive {
@@ -35,7 +35,7 @@ macro_rules! make_primitive_enum {
 
             fn try_from(value: u8) -> Result<Self> {
                 match value {
-                    $($tag => Ok(Self::$name),)*
+                    $(tag if tag == Self::$name as u8 => Ok(Self::$name),)*
                     _ => Err(Error::InvalidBytes)
                 }
             }
