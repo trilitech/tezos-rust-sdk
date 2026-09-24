@@ -320,10 +320,19 @@ impl Encoder<Reveal, Vec<u8>, Error> for OperationContentBytesCoder {
     fn encode(value: &Reveal) -> Result<Vec<u8>> {
         let content_bytes = Self::encode_manager_operation_content(value)?;
         let public_key_bytes = value.public_key.to_bytes()?;
+        // A reveal's encoding ends with an optional proof of possession.
+        // Reveal holds no proof, so the flag always says none follows.
+        let proof_presence = utils::encode_bool(false);
 
         let tag = Reveal::tag().to_bytes();
 
-        Ok([tag.as_slice(), &content_bytes, &public_key_bytes].concat())
+        Ok([
+            tag.as_slice(),
+            &content_bytes,
+            &public_key_bytes,
+            &proof_presence,
+        ]
+        .concat())
     }
 }
 
@@ -751,6 +760,11 @@ impl ConsumingDecoder<Reveal, u8, Error> for OperationContentBytesCoder {
             value,
             |source, fee, counter, gas_limit, storage_limit, value| {
                 let public_key = PublicKey::from_consumable_bytes(value)?;
+                // A proof has no field to decode into, so a reveal carrying
+                // one is refused rather than read as one without.
+                if utils::decode_consuming_bool(value)? {
+                    return Err(Error::InvalidBytes);
+                }
 
                 Ok(Reveal::new(
                     source,

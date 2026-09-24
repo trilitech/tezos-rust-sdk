@@ -511,8 +511,27 @@ mod test {
         Ok(())
     }
 
+    #[test]
+    fn test_unforge_reveal_with_proof_is_refused() {
+        // As a protocol 025 (`PsUshuai`) node's helpers/forge/operations
+        // answered the tz3 reveal below with a BLS proof added.
+        let bytes = hex!("6b02c0d8a3435278b955bd81c66e96ee76a87a42e6cd904e07904e00020397e0c76ca850349cfb7684121c5fc7516f7ff3300bf047631cc8e6b155b56758ff00000060a0842f1ed379d8b610e5b55e2acfa84e36b0791494ac5e4557b53da6736e678322b0120acb0e045ed237413e8992c8bf19f9a32ee7a99e114406ff4af69c60d7fed1c5fa961c2bf4a26d0b9ae225b6858d8cc66caadd420a23fcfec50a8599db");
+        assert!(matches!(
+            OperationContent::from_forged_bytes(bytes),
+            Err(crate::Error::InvalidBytes)
+        ));
+    }
+
     fn operations_with_bytes() -> Vec<(UnsignedOperation, &'static [u8])> {
         vec![
+            // As a protocol 025 (`PsUshuai`) node's helpers/forge/operations
+            // answered it: a reveal's absent proof is its last byte.
+            (
+                UnsignedOperation::new("BLD99NFUNNiFNdfSJDXXqEtzhRr1neB5bQuj1NYp4Djiu66ossi".try_into().unwrap(), vec![
+                    Reveal::new("tz3duiskLgZdaEvkgEwWYF4mUnVXde7JTtef".try_into().unwrap(), 10000u32.into(), 7u32.into(), 10000u32.into(), 0u32.into(), "p2pk67fo5oy6byruqDtzVixbM7L3cVBDRMcFhA33XD5w2HF4fRXDJhw".try_into().unwrap()).into(),
+                ]),
+                &hex!("4187039c411906dd31293a1e3b259e91dc66eeefc36039bdb0d8bf5ea74613066b02c0d8a3435278b955bd81c66e96ee76a87a42e6cd904e07904e00020397e0c76ca850349cfb7684121c5fc7516f7ff3300bf047631cc8e6b155b5675800"),
+            ),
             (
                 UnsignedOperation::new("BLyKu3tnc9NCuiFfCqfeVGPCoZTyW63dYh2XAYxkM7fQYKCqsju".try_into().unwrap(), vec![]),
                 &hex!("a5db12a8a7716fa5445bd374c8b3239c876dde8397efae0eb0dd223dc23a51c7")
@@ -704,7 +723,13 @@ mod test {
             ),
             (
                 Reveal::new("tz1SZ2CmbQB7MMXgcMSmyyVXpya1rkb9UGUE".try_into().unwrap(), "135675".try_into().unwrap(), "154".try_into().unwrap(), "23675".try_into().unwrap(), "34152".try_into().unwrap(), "edpkuaARNJPQygG82X1xed6Z2kDutT8XjL3Fmv1XPBbca1uARirj55".try_into().unwrap()).into(),
-                &hex!("6b004bd66485632a18d61068fc940772dec8add5ff93fba3089a01fbb801e88a02007a79d89acb296dd9ec2be8fba817702dc41adf19e28bb250a337f840eb263c69"),
+                &hex!("6b004bd66485632a18d61068fc940772dec8add5ff93fba3089a01fbb801e88a02007a79d89acb296dd9ec2be8fba817702dc41adf19e28bb250a337f840eb263c6900"),
+            ),
+            // As a protocol 025 (`PsUshuai`) node's helpers/forge/operations
+            // answered it.
+            (
+                Reveal::new("tz3duiskLgZdaEvkgEwWYF4mUnVXde7JTtef".try_into().unwrap(), 10000u32.into(), 7u32.into(), 10000u32.into(), 0u32.into(), "p2pk67fo5oy6byruqDtzVixbM7L3cVBDRMcFhA33XD5w2HF4fRXDJhw".try_into().unwrap()).into(),
+                &hex!("6b02c0d8a3435278b955bd81c66e96ee76a87a42e6cd904e07904e00020397e0c76ca850349cfb7684121c5fc7516f7ff3300bf047631cc8e6b155b5675800"),
             ),
             (
                 Transaction::new("tz1i8xLzLPQHknc5jmeFc3qxijar2HLG2W4Z".try_into().unwrap(), 135675u32.into(), 154u32.into(), 23675u32.into(), 34152u32.into(), 763243u32.into(), "KT1GFYUFQRT4RsNbtG2NU23woUyMp5tx9gx2".try_into().unwrap(), None).into(),

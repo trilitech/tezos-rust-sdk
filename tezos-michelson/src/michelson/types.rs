@@ -28,60 +28,54 @@ make_types!(
         }
     ],
     conversion_fallback: fallback,
-    (Parameter, parameter, 0, boxed: (r#type: Type)),
-    (Storage, storage, 1, boxed: (r#type: Type)),
+    (Parameter, parameter, boxed: (r#type: Type)),
+    (Storage, storage, boxed: (r#type: Type)),
     (
         Code,
         code,
-        2,
         boxed: (code: crate::michelson::data::instructions::Instruction)
     ),
-    (Option, option, 99, boxed: (r#type: Type)),
-    (List, list, 95, boxed: (r#type: Type)),
-    (Set, set, 102, boxed: (r#type: Type)),
-    (Operation, operation, 109),
-    (Contract, contract, 90, boxed: (r#type: Type)),
-    (Ticket, ticket, 135, boxed: (r#type: Type)),
-    (Pair, pair, 101, vec: (types: Type)),
-    (Or, or, 100, boxed: (lhs: Type), boxed: (rhs: Type)),
+    (Option, option, boxed: (r#type: Type)),
+    (List, list, boxed: (r#type: Type)),
+    (Set, set, boxed: (r#type: Type)),
+    (Operation, operation),
+    (Contract, contract, boxed: (r#type: Type)),
+    (Ticket, ticket, boxed: (r#type: Type)),
+    (Pair, pair, vec: (types: Type)),
+    (Or, or, boxed: (lhs: Type), boxed: (rhs: Type)),
     (
         Lambda,
         lambda,
-        94,
         boxed: (parameter_type: Type),
         boxed: (return_type: Type)
     ),
     (
         Map,
         map,
-        96,
         boxed: (key_type: Type),
         boxed: (value_type: Type)
     ),
     (
         BigMap,
         big_map,
-        97,
         boxed: (key_type: Type),
         boxed: (value_type: Type)
     ),
-    (Bls12_381G1, bls12_381_g1, 128),
-    (Bls12_381G2, bls12_381_g2, 129),
-    (Bls12_381Fr, bls12_381_fr, 130),
+    (Bls12_381G1, bls12_381_g1),
+    (Bls12_381G2, bls12_381_g2),
+    (Bls12_381Fr, bls12_381_fr),
     (
         SaplingTransaction,
         sapling_transaction,
-        132,
         (memo_size: crate::michelson::data::Nat)
     ),
     (
         SaplingState,
         sapling_state,
-        131,
         (memo_size: crate::michelson::data::Nat)
     ),
-    (Chest, chest, 141),
-    (ChestKey, chest_key, 142),
+    (Chest, chest),
+    (ChestKey, chest_key),
 );
 
 impl Type {

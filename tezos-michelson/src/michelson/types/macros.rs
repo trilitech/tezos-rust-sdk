@@ -5,7 +5,7 @@ macro_rules! make_types {
         conversion_fallback: $fallback:ident,
         $(
             (
-                $name:ident, $code:ident, $tag:literal
+                $name:ident, $code:ident
                 $(, super_enum: $super_enum_type:ty, $super_enum_case:ident)?
                 $(, ($field_name:ident: $field_type:ty))*
                 $(, boxed: ($boxed_field_name:ident: $boxed_field_type:ty))*
@@ -105,11 +105,11 @@ macro_rules! make_types {
             }
         }
 
-        make_primitive_enum!($($name, $code, $tag)+);
+        make_primitive_enum!($($name, $code)+);
 
         $(
             make_type!(
-                $name, $code, $tag
+                $name, $code
                 $(, super_enum: $super_enum_type, $super_enum_case)?
                 $(, ($field_name, $field_type))*
                 $(, boxed: ($boxed_field_name: $boxed_field_type))*
@@ -121,7 +121,7 @@ macro_rules! make_types {
 
 macro_rules! make_type {
     (
-        $name:ident, $code:ident, $tag:literal
+        $name:ident, $code:ident
         $(, super_enum: $super_enum_type:ty, $super_enum_case:ident)?
         $(, ($field_name:ident, $field_type:ty))*
         $(, boxed: ($boxed_field_name:ident: $boxed_field_type:ty))*
