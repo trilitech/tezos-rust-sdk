@@ -43,7 +43,7 @@ pub mod default {
     use crate::models::error::RpcError;
 
     use super::*;
-    use reqwest::{Client, Response};
+    use reqwest::{header::CONTENT_TYPE, Client, Response};
 
     #[derive(Debug)]
     pub struct HttpClient {
@@ -61,8 +61,16 @@ pub mod default {
             response: Response,
         ) -> Result<T, Error> {
             if response.status() != 200 {
-                // Do not parse JSON when the content type is `plain/text`
-                if response.headers()["content-type"] == "application/json" {
+                let is_json = response
+                    .headers()
+                    .get(CONTENT_TYPE)
+                    .and_then(|value| value.to_str().ok())
+                    .map_or(false, |value| {
+                        value.split(';').next().map_or(false, |mime| {
+                            mime.trim().eq_ignore_ascii_case("application/json")
+                        })
+                    });
+                if is_json {
                     let errors: Vec<RpcError> = response.json().await?;
                     return Err(Error::RpcErrors(errors.into()));
                 }
@@ -72,6 +80,46 @@ pub mod default {
             }
 
             Ok(response.json().await?)
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use httpmock::prelude::*;
+
+        use super::*;
+
+        #[tokio::test]
+        async fn error_without_content_type_is_returned_instead_of_panicking() {
+            let server = MockServer::start();
+            server.mock(|when, then| {
+                when.method(GET).path("/unavailable");
+                then.status(503).body("temporarily unavailable");
+            });
+
+            let client = HttpClient::new(server.base_url());
+            let result = client.get::<serde_json::Value>("/unavailable").await;
+            match result {
+                Err(Error::RpcErrorPlain { description }) => {
+                    assert_eq!(description, "temporarily unavailable");
+                }
+                other => panic!("expected plain RPC error, got {other:?}"),
+            }
+        }
+
+        #[tokio::test]
+        async fn json_error_with_charset_is_parsed() {
+            let server = MockServer::start();
+            server.mock(|when, then| {
+                when.method(GET).path("/unavailable");
+                then.status(503)
+                    .header("content-type", "application/json; charset=utf-8")
+                    .body(r#"[{"kind":"temporary","id":"node.unavailable"}]"#);
+            });
+
+            let client = HttpClient::new(server.base_url());
+            let result = client.get::<serde_json::Value>("/unavailable").await;
+            assert!(matches!(result, Err(Error::RpcErrors(_))));
         }
     }
 
